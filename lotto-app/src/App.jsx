@@ -1243,6 +1243,7 @@ export default function App(){
   const[favorites,setFavorites]=useState([]);
   const[saved,setSaved]=useState([]);
   const[shareData,setShareData]=useState(null);
+  const[onboardStep,setOnboardStep]=useState(0);
 
   useEffect(()=>{
     (async()=>{
@@ -1250,13 +1251,21 @@ export default function App(){
         const p=await window.storage.get("v2_profile");
         const f=await window.storage.get("v2_fav");
         const s=await window.storage.get("v2_saved");
+        const ob=await window.storage.get("v2_onboarded");
         if(p)setProfile(JSON.parse(p.value));
         if(f)setFavorites(JSON.parse(f.value));
         if(s)setSaved(JSON.parse(s.value));
-      }catch(e){}
-      setScreen(s=>s==="loading"?"home":s);
+        // 첫 실행이면 온보딩으로
+        if(!ob){setScreen("onboarding");}
+        else{setScreen("home");}
+      }catch(e){setScreen("onboarding");}
     })();
   },[]);
+
+  const finishOnboarding=async()=>{
+    try{await window.storage.set("v2_onboarded","true");}catch(e){}
+    setScreen("home");
+  };
 
   const saveProfile=async(p)=>{setProfile(p);try{await window.storage.set("v2_profile",JSON.stringify(p));}catch(e){}setScreen("home");};
   const saveFavorites=async(f)=>{setFavorites(f);try{await window.storage.set("v2_fav",JSON.stringify(f));}catch(e){}};
@@ -1277,7 +1286,134 @@ export default function App(){
   const BG="linear-gradient(160deg,#080818 0%,#101030 100%)";
   const W={minHeight:"100vh",background:BG,fontFamily:"'Malgun Gothic','Apple SD Gothic Neo',sans-serif",color:"#fff",boxSizing:"border-box"};
 
-  if(screen==="loading")return(<div style={{...W,display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{fontSize:48,marginBottom:10}}>🎰</div></div>);
+  // ── 로딩
+  if(screen==="loading")return(
+    <div style={{...W,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
+      <div style={{fontSize:64,marginBottom:16,animation:"pulse 1s infinite"}}>🍀</div>
+      <div style={{fontSize:13,color:"#555",letterSpacing:2}}>행운을 불러오는 중...</div>
+      <style>{`@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:.7}}`}</style>
+    </div>
+  );
+
+  // ── 온보딩
+  const STEPS=[
+    {
+      em:"🍀",
+      title:"오늘 나에게\n행운이 있었을까?",
+      desc:"오늘의 하루를 기록하고\n나만의 로또 번호를 뽑아요",
+      sub:"매일 새로운 번호, 매일 새로운 행운",
+      bg:"linear-gradient(160deg,#080818,#0a0a2a)",
+      color:"#f9d71c",
+    },
+    {
+      em:"🌅",
+      title:"오늘 하루가\n번호가 돼요",
+      desc:"기분·날씨·걸음수·식사·행운\n오늘의 기록이 그대로 번호로",
+      sub:"불꽃놀이·휠·슬롯 등 다양한 방법으로",
+      bg:"linear-gradient(160deg,#0a0818,#150820)",
+      color:"#ff9800",
+    },
+    {
+      em:"⭐",
+      title:"내 정보를 넣으면\n더 정확해져요",
+      desc:"생년도를 입력하면 띠별 운세와\n행운 번호까지 확인할 수 있어요",
+      sub:"나이·띠·혈액형으로 맞춤 번호 추출",
+      bg:"linear-gradient(160deg,#080820,#100830)",
+      color:"#b44aff",
+    },
+    {
+      em:"🎰",
+      title:"행운은 오늘\n당신 곁에 있어요",
+      desc:"매주 복권을 살 때마다\n이 앱으로 번호를 뽑아보세요",
+      sub:"당첨되면 꼭 알려주세요 🍀",
+      bg:"linear-gradient(160deg,#0a0a14,#101030)",
+      color:"#50c878",
+    },
+  ];
+
+  if(screen==="onboarding"){
+    const s=STEPS[onboardStep];
+    const isLast=onboardStep===STEPS.length-1;
+    return(
+      <div style={{...W,display:"flex",flexDirection:"column",alignItems:"center",
+        justifyContent:"space-between",padding:"0 0 40px",
+        background:s.bg,transition:"background .5s"}}>
+
+        {/* 상단 스킵 */}
+        <div style={{width:"100%",display:"flex",justifyContent:"flex-end",padding:"20px 20px 0"}}>
+          {!isLast&&(
+            <button onClick={finishOnboarding} style={{background:"none",border:"none",
+              color:"rgba(255,255,255,0.3)",fontSize:13,cursor:"pointer"}}>건너뛰기</button>
+          )}
+        </div>
+
+        {/* 메인 콘텐츠 */}
+        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",
+          justifyContent:"center",padding:"0 32px",textAlign:"center"}}>
+
+          {/* 이모지 */}
+          <div style={{fontSize:90,marginBottom:32,lineHeight:1,
+            filter:`drop-shadow(0 0 30px ${s.color}66)`,
+            animation:"floatAnim 3s ease-in-out infinite"}}>
+            {s.em}
+          </div>
+
+          {/* 제목 */}
+          <h1 style={{fontSize:26,fontWeight:900,lineHeight:1.4,marginBottom:16,
+            color:"#fff",whiteSpace:"pre-line",letterSpacing:-0.5}}>
+            {s.title}
+          </h1>
+
+          {/* 설명 */}
+          <p style={{fontSize:15,color:"rgba(255,255,255,0.6)",lineHeight:1.8,
+            marginBottom:12,whiteSpace:"pre-line"}}>
+            {s.desc}
+          </p>
+
+          {/* 서브 */}
+          <p style={{fontSize:12,color:s.color,fontWeight:700,
+            background:`${s.color}18`,border:`1px solid ${s.color}33`,
+            borderRadius:20,padding:"6px 16px"}}>
+            {s.sub}
+          </p>
+        </div>
+
+        {/* 하단 */}
+        <div style={{width:"100%",padding:"0 24px"}}>
+          {/* 페이지 도트 */}
+          <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:24}}>
+            {STEPS.map((_,i)=>(
+              <div key={i} onClick={()=>setOnboardStep(i)} style={{
+                width:i===onboardStep?24:8,height:8,borderRadius:4,cursor:"pointer",
+                background:i===onboardStep?s.color:"rgba(255,255,255,0.2)",
+                transition:"all .3s",
+              }}/>
+            ))}
+          </div>
+
+          {/* 버튼 */}
+          {isLast?(
+            <button onClick={finishOnboarding} style={{
+              width:"100%",padding:"17px",borderRadius:16,border:"none",
+              background:`linear-gradient(135deg,${s.color},#f9d71c)`,
+              color:"#000",fontSize:17,fontWeight:900,cursor:"pointer",
+              boxShadow:`0 6px 28px ${s.color}44`,letterSpacing:0.5,
+            }}>🍀 번호 뽑으러 가기!</button>
+          ):(
+            <button onClick={()=>setOnboardStep(i=>i+1)} style={{
+              width:"100%",padding:"17px",borderRadius:16,border:"none",
+              background:`linear-gradient(135deg,${s.color}cc,${s.color})`,
+              color:"#000",fontSize:17,fontWeight:900,cursor:"pointer",
+              boxShadow:`0 6px 24px ${s.color}33`,
+            }}>다음 →</button>
+          )}
+        </div>
+        <style>{`
+          @keyframes floatAnim{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+        `}</style>
+      </div>
+    );
+  }
   if(screen==="profile")return(<div style={W}><ProfileScreen profile={profile} onSave={saveProfile} onBack={goHome}/></div>);
 
   const SCREENS={
