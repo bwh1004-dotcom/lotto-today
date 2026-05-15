@@ -46,7 +46,7 @@ function ballColor(n){
   if(n<=10)return{bg:"#f9d71c",text:"#000"};
   if(n<=20)return{bg:"#69c8f2",text:"#000"};
   if(n<=30)return{bg:"#ff7272",text:"#fff"};
-  if(n<=40)return{bg:"#aaa",text:"#fff"};
+  if(n<=40)return{bg:"#aaaaaa",text:"#fff"};
   return{bg:"#b0d840",text:"#000"};
 }
 function matchDream(t){
@@ -118,8 +118,14 @@ function NumLine({nums}){
   return(
     <div style={{background:"rgba(249,215,28,0.07)",border:"1px solid rgba(249,215,28,0.2)",
       borderRadius:10,padding:"10px 16px",textAlign:"center",marginTop:10,
-      fontSize:16,fontWeight:900,letterSpacing:3,color:"#f9d71c"}}>
-      {nums.join("  ")}
+      display:"flex",justifyContent:"center",gap:6,flexWrap:"wrap"}}>
+      {nums.map((n,i)=>{
+        const c=ballColor(n);
+        return(
+          <span key={i} style={{fontSize:16,fontWeight:900,color:c.bg,
+            textShadow:`0 0 8px ${c.bg}66`}}>{n}</span>
+        );
+      })}
     </div>
   );
 }
@@ -178,11 +184,12 @@ function ShareModal({data,onClose}){
 // 🌅 오늘의 하루
 // ════════════════════════════════════════════════════════════
 const MOODS=[
-  {id:"great",em:"😊",label:"좋은 하루",nums:[7,17,27,37,1,11]},
-  {id:"normal",em:"😐",label:"그저 그럼",nums:[4,14,24,34,2,22]},
-  {id:"tired",em:"😔",label:"피곤한 날",nums:[3,13,23,33,5,15]},
-  {id:"excited",em:"🤩",label:"신나는 날",nums:[8,18,28,38,9,19]},
-  {id:"angry",em:"😤",label:"화나는 날",nums:[6,16,26,36,10,20]},
+  {id:"great",  em:"😊",label:"좋은 하루", nums:[7,17,27,37,1,11]},
+  {id:"normal", em:"😐",label:"그저 그럼", nums:[4,14,24,34,2,22]},
+  {id:"tired",  em:"😔",label:"피곤한 날", nums:[3,13,23,33,5,15]},
+  {id:"excited",em:"🤩",label:"신나는 날", nums:[8,18,28,38,9,19]},
+  {id:"angry",  em:"😤",label:"화나는 날", nums:[6,16,26,36,10,20]},
+  {id:"scared", em:"😱",label:"무서운 날", nums:[13,22,31,40,4,17]},
 ];
 const WEATHERS=[
   {id:"sunny",em:"☀️",label:"맑음",bonus:5},
@@ -212,6 +219,7 @@ function TodayScreen({profile,onSave,onShare,onBack}){
   const[meals,setMeals]=useState(null);
   const[lucky,setLucky]=useState(null);
   const[nums,setNums]=useState(null);
+  const[petals,setPetals]=useState([]);
   const[realWeather,setRealWeather]=useState(null);
   const[weatherLabel,setWeatherLabel]=useState(null);
   const[ptcls,setPtcls]=useState([]);
@@ -267,6 +275,19 @@ function TodayScreen({profile,onSave,onShare,onBack}){
     if(profile){const z=getZodiac(parseInt(profile.year));const zn=ZODIAC_NUMS[z];if(zn)pool.push(...zn.slice(0,3));}
     setNums(pickNums(pool));
     SFX.chime();
+    // 벚꽃 이펙트
+    const newPetals=Array.from({length:28},(_,i)=>({
+      id:i,
+      x:5+Math.random()*90,      // 화면 가로 위치 %
+      delay:Math.random()*1.8,    // 떨어지기 시작 딜레이
+      dur:2.5+Math.random()*2,    // 떨어지는 속도
+      size:6+Math.random()*8,     // 꽃잎 크기
+      rotate:Math.random()*360,   // 초기 회전
+      swing:20+Math.random()*30,  // 좌우 흔들림 폭
+      color:["#ffb7c5","#ffc0cb","#ff9eb5","#ffaab5","#ffe4e8"][i%5],
+    }));
+    setPetals(newPetals);
+    setTimeout(()=>setPetals([]),5000);
   };
 
   const canGenerate=mood!==null&&weather!==null;
@@ -282,6 +303,19 @@ function TodayScreen({profile,onSave,onShare,onBack}){
   });
 
   return(<div style={W}>
+    {/* 벚꽃 꽃잎 */}
+    {petals.map(p=>(
+      <div key={p.id} style={{
+        position:"fixed",
+        left:`${p.x}%`,top:"-20px",
+        width:p.size,height:p.size*0.8,
+        borderRadius:"50% 50% 50% 50% / 60% 60% 40% 40%",
+        background:`radial-gradient(ellipse at 40% 40%,${p.color}ee,${p.color}99)`,
+        pointerEvents:"none",zIndex:9998,
+        boxShadow:`0 0 4px ${p.color}66`,
+        animation:`petalFall ${p.dur}s ease-in ${p.delay}s forwards`,
+      }}/>
+    ))}
     {/* 날씨 파티클 */}
     {ptcls.length>0&&<div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
       {ptcls.map(p=>(
@@ -338,7 +372,7 @@ function TodayScreen({profile,onSave,onShare,onBack}){
         <div style={{marginBottom:12}}>
           <div style={{fontSize:11,color:"#666",marginBottom:5}}>🍚 오늘 밥 몇 번 먹었어요?</div>
           <div style={{display:"flex",gap:8}}>
-            {[1,2,3,4].map(n=>(<button key={n} onClick={()=>setMeals(n)} style={{
+            {[0,1,2,3,4].map(n=>(<button key={n} onClick={()=>setMeals(n)} style={{
               flex:1,padding:"10px",borderRadius:8,cursor:"pointer",fontSize:14,fontWeight:700,
               border:`1px solid ${meals===n?"#f9d71c":"rgba(255,255,255,0.1)"}`,
               background:meals===n?"rgba(249,215,28,0.12)":"rgba(255,255,255,0.04)",
@@ -375,7 +409,17 @@ function TodayScreen({profile,onSave,onShare,onBack}){
         <ActionBtns nums={nums} mode="🌅 오늘의 하루" onSave={onSave} onShare={onShare}/>
       </div>)}
     </div>
-    <style>{`@keyframes ptclFall{0%{transform:translateY(-10px) rotate(0)}100%{transform:translateY(110vh) rotate(360deg)}}`}</style>
+    <style>{`
+      @keyframes ptclFall{0%{transform:translateY(-10px) rotate(0)}100%{transform:translateY(110vh) rotate(360deg)}}
+      @keyframes petalFall{
+        0%  {top:-20px;transform:rotate(0deg) translateX(0);opacity:1;}
+        20% {transform:rotate(72deg) translateX(18px);}
+        40% {transform:rotate(144deg) translateX(-18px);}
+        60% {transform:rotate(216deg) translateX(22px);}
+        80% {transform:rotate(288deg) translateX(-12px);}
+        100%{top:110vh;transform:rotate(360deg) translateX(0);opacity:0;}
+      }
+    `}</style>
   </div>);
 }
 
@@ -549,7 +593,7 @@ function DreamScreen({onSave,onShare,onBack}){
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
           {cats.map(c=>{
             const isPoop=c===POOP_CAT;
-            return(<button key={c} onClick={()=>setCat(c)} style={{
+            return(<button key={c} onClick={()=>{SFX.tone(440,0.08,"sine",0.15);setCat(c);}} style={{
               padding:"18px 8px",borderRadius:14,cursor:"pointer",
               border:`1px solid ${isPoop?"rgba(200,160,80,0.35)":"rgba(180,74,255,0.15)"}`,
               background:isPoop?"rgba(139,90,43,0.12)":"rgba(180,74,255,0.05)",
@@ -566,7 +610,7 @@ function DreamScreen({onSave,onShare,onBack}){
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
           {Object.entries(TREE[cat]).map(([s,vals])=>{
             const isPoop=cat===POOP_CAT;
-            return(<button key={s} onClick={()=>selectSub(s,vals)} style={{
+            return(<button key={s} onClick={()=>{SFX.tone(520,0.08,"sine",0.15);selectSub(s,vals);}} style={{
               padding:"16px 8px",borderRadius:12,cursor:"pointer",
               border:`1px solid ${isPoop?"rgba(200,160,80,0.2)":"rgba(180,74,255,0.15)"}`,
               background:isPoop?"rgba(139,90,43,0.08)":"rgba(180,74,255,0.05)",
@@ -767,17 +811,25 @@ function dirLabel(a){return["북","북동","동","남동","남","남서","서","
 function locPickNums(myLat,myLng,store){
   const dist=locDist(myLat,myLng,store.lat,store.lng);
   const angle=locAngle(myLat,myLng,store.lat,store.lng);
-  const pool=[
-    Math.round(Math.abs(store.lat-myLat)*100)%45+1,
-    Math.round(Math.abs(store.lng-myLng)*100)%45+1,
-    Math.round(dist)%45+1,
-    Math.round(angle/8)%45+1,
-    store.wins%45||45,
-    Math.round((store.lat+store.lng)*10)%45+1,
-    Math.round(myLat*10)%45+1,
-    Math.round(myLng*10)%45+1,
-  ];
-  const u=[...new Set(pool)].filter(n=>n>=1&&n<=45);
+  const dLat=Math.abs(store.lat-myLat);
+  const dLng=Math.abs(store.lng-myLng);
+
+  // 화면에 보이는 숫자 그대로 번호 추출
+  const distNum=dist<1
+    ?Math.round(dist*1000/10)       // 230m → 23
+    :Math.round(dist*10);           // 2.3km → 23
+  const dirNum=(Math.round(angle/45)%8)+1; // 북=1,북동=2...북서=8
+  const latNum=Math.round(dLat*1000);      // 0.020° → 20
+  const lngNum=Math.round(dLng*1000);      // 0.006° → 6
+  const winsNum=store.wins;               // 1등 횟수 그대로
+
+  const toValid=n=>{
+    if(!n||n<=0)return 45;
+    if(n>45)return n%45||45;
+    return n;
+  };
+  const pool=[distNum,dirNum,latNum,lngNum,winsNum].map(toValid).filter(n=>n>=1&&n<=45);
+  const u=[...new Set(pool)];
   const p=[...u].sort(()=>Math.random()-0.5).slice(0,6);
   while(p.length<6){const r=Math.floor(Math.random()*45)+1;if(!p.includes(r))p.push(r);}
   return p.sort((a,b)=>a-b);
@@ -940,14 +992,39 @@ function LocationScreen({onSave,onShare,onBack}){
           <div style={{fontSize:13,fontWeight:900,color:"#f9d71c",marginBottom:4}}>🏆 {selected.name}</div>
           <div style={{fontSize:10,color:"#555",marginBottom:12}}>1등 {selected.wins}회 · {fmtDist(coordInfo?.dist||0)}</div>
           {coordInfo&&(
-            <div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:14,flexWrap:"wrap"}}>
-              {[["거리",fmtDist(coordInfo.dist)],["방향",dirLabel(coordInfo.angle)],
-                ["위도차",`${coordInfo.dLat.toFixed(3)}°`],["경도차",`${coordInfo.dLng.toFixed(3)}°`]].map(([k,v])=>(
-                <div key={k} style={{background:"rgba(255,255,255,0.04)",borderRadius:8,padding:"5px 10px",textAlign:"center"}}>
-                  <div style={{fontSize:8,color:"#555"}}>{k}</div>
-                  <div style={{fontSize:11,fontWeight:900,color:"#f9d71c"}}>{v}</div>
-                </div>
-              ))}
+            <div style={{marginBottom:14}}>
+              <div style={{fontSize:10,color:"#555",textAlign:"center",marginBottom:8}}>
+                아래 숫자들이 그대로 번호가 됐어요
+              </div>
+              <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
+                {[
+                  ["📍 거리", fmtDist(coordInfo.dist),
+                    coordInfo.dist<1?Math.round(coordInfo.dist*100):Math.round(coordInfo.dist*10)],
+                  ["🧭 방향", dirLabel(coordInfo.angle),
+                    (Math.round(coordInfo.angle/45)%8)+1],
+                  ["↕️ 위도차", `${coordInfo.dLat.toFixed(3)}°`,
+                    Math.round(coordInfo.dLat*1000)],
+                  ["↔️ 경도차", `${coordInfo.dLng.toFixed(3)}°`,
+                    Math.round(coordInfo.dLng*1000)],
+                  ["🏆 1등", `${selected.wins}회`, selected.wins],
+                ].map(([k,v,n])=>{
+                  const valid=n<=0?45:n>45?n%45||45:n;
+                  const c=ballColor(valid);
+                  return(
+                    <div key={k} style={{background:"rgba(255,255,255,0.04)",borderRadius:10,
+                      padding:"6px 10px",textAlign:"center",minWidth:56}}>
+                      <div style={{fontSize:8,color:"#555",marginBottom:3}}>{k}</div>
+                      <div style={{fontSize:11,fontWeight:700,color:"#aaa",marginBottom:4}}>{v}</div>
+                      <div style={{width:26,height:26,borderRadius:"50%",margin:"0 auto",
+                        background:`radial-gradient(circle at 35% 35%,${c.bg}dd,${c.bg})`,
+                        display:"flex",alignItems:"center",justifyContent:"center",
+                        fontSize:10,fontWeight:900,color:c.text}}>
+                        {valid}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
           <Balls nums={nums}/>
@@ -981,7 +1058,6 @@ function FormulaScreen({onSave,onShare,onBack}){
     {id:"daughter2", label:"딸②",   initial:"녀②", color:"#ba68c8"},
     {id:"daughter3", label:"딸③",   initial:"녀③", color:"#ab47bc"},
     {id:"friend",    label:"친구",   initial:"友",  color:"#ffb74d"},
-    {id:"me",        label:"나",     initial:"나",  color:"#f9d71c"},
   ];
 
   const[dates,setDates]=useState({});
@@ -1065,8 +1141,7 @@ function FormulaScreen({onSave,onShare,onBack}){
               display:"flex",flexDirection:"column",alignItems:"center",gap:5,
               background:"none",border:"none",cursor:"pointer",padding:"4px 2px",
               opacity:isSel?1:0.38,transition:"opacity .2s,transform .15s",
-              transform:isSel?"scale(1.06)":"scale(1)"}}>
-              <div style={{width:48,height:48,borderRadius:"50%",
+              transform:isSel?"scale(1.06)":"scale(1)"}} onClick={()=>{SFX.tone(isSel?300:520,0.08,"sine",0.12);toggleMember(m.id);}}>              <div style={{width:48,height:48,borderRadius:"50%",
                 background:isSel?`${m.color}28`:"rgba(255,255,255,0.05)",
                 border:`2px solid ${isSel?m.color:"rgba(255,255,255,0.1)"}`,
                 display:"flex",alignItems:"center",justifyContent:"center",
@@ -1157,9 +1232,11 @@ function FavoritesScreen({favorites,onSaveFav,onSave,onShare,onBack}){
 
   const toggleExtra=(n)=>{
     if(lifetime.includes(n))return;
+    SFX.tone(660,0.06,"sine",0.12);
     setExtra(prev=>{if(prev.includes(n))return prev.filter(x=>x!==n);if(prev.length>=need)return prev;return[...prev,n];});
   };
   const toggleTemp=(n)=>{
+    SFX.tone(660,0.06,"sine",0.12);
     setTempLifetime(prev=>{if(prev.includes(n))return prev.filter(x=>x!==n);if(prev.length>=6)return prev;return[...prev,n];});
   };
   const generate=()=>{
@@ -1402,6 +1479,7 @@ function WheelScreen({onSave,onShare,onBack}){
 
   const doSpin=()=>{
     if(spinning||phase!=="play")return;
+    SFX.tone(300,0.15,"triangle",0.18);
     setSpinning(true);
     const extra=720+Math.random()*720;
     const duration=4500;
@@ -1643,8 +1721,10 @@ function ApartmentScreen({onSave,onShare,onBack}){
   const[collected,setCollected]=useState([]);
   const[nums,setNums]=useState([]);
   const[miss,setMiss]=useState(false);
+  const[sparks,setSparks]=useState([]);
   const alive=useRef(true);
   const ivRef=useRef(null);
+  const sparkId=useRef(0);
 
   useEffect(()=>{alive.current=true;return()=>{alive.current=false;clearInterval(ivRef.current);};},[]);
 
@@ -1653,13 +1733,28 @@ function ApartmentScreen({onSave,onShare,onBack}){
     ivRef.current=setInterval(()=>{if(!alive.current)return;setGrid(randomGrid());},1100);
   };
 
-  const tapWindow=(bi,fi,ui,cell)=>{
+  const spawnSparks=(e)=>{
+    const rect=e.currentTarget.getBoundingClientRect();
+    const x=rect.left+rect.width/2;
+    const y=rect.top+rect.height/2;
+    const colors=["#ff5050","#f9d71c","#ff9800","#ff7070","#ffcc00"];
+    const id=sparkId.current++;
+    const newSparks=Array.from({length:8},(_,i)=>({
+      id:`${id}_${i}`,x,y,
+      angle:(i/8)*360,
+      color:colors[i%colors.length],
+    }));
+    setSparks(prev=>[...prev,...newSparks]);
+    setTimeout(()=>setSparks(prev=>prev.filter(s=>!newSparks.find(n=>n.id===s.id))),600);
+  };
+
+  const tapWindow=(bi,fi,ui,cell,e)=>{
     if(phase!=="play")return;
     if(cell==="red"){
       clearInterval(ivRef.current);
       SFX.pop();
-      // 미니 불꽃 SFX
       setTimeout(()=>SFX.boom(20),100);
+      if(e)spawnSparks(e);
       const num=Math.max(1,Math.min(45,((bi+1)*10+(BUILDINGS_DATA[bi].floors-fi)+ui)%45+1));
       const next=[...collected,num];
       setCollected(next);
@@ -1740,7 +1835,7 @@ function ApartmentScreen({onSave,onShare,onBack}){
                     {row.map((cell,ui)=>{
                       const isRed=cell==="red",isOn=cell==="on";
                       return(
-                        <div key={ui} onClick={()=>tapWindow(bi,fi,ui,cell)} style={{
+                        <div key={ui} onClick={(e)=>tapWindow(bi,fi,ui,cell,e)} style={{
                           flex:1,height:11,borderRadius:2,
                           cursor:phase==="play"?"pointer":"default",
                           background:isRed?"rgba(255,50,50,0.95)":isOn?b.color:"#080e1e",
@@ -1801,7 +1896,24 @@ function ApartmentScreen({onSave,onShare,onBack}){
         </button>
       )}
     </div>
-    <style>{`@keyframes twinkle{0%,100%{opacity:1}50%{opacity:0.2}}`}</style>
+    <style>{`
+      @keyframes twinkle{0%,100%{opacity:1}50%{opacity:0.2}}
+      @keyframes sparkOut{0%{transform:translate(-50%,-50%) scale(1.2);opacity:1;}100%{opacity:0;}}
+    `}</style>
+    {/* 불꽃 파티클 */}
+    {sparks.map(s=>{
+      const rad=s.angle*Math.PI/180;
+      const tx=Math.cos(rad)*45,ty=Math.sin(rad)*45;
+      return(<div key={s.id} style={{
+        position:"fixed",left:s.x,top:s.y,
+        width:7,height:7,borderRadius:"50%",
+        background:s.color,
+        pointerEvents:"none",zIndex:9999,
+        boxShadow:`0 0 6px ${s.color}`,
+        animation:"sparkOut 0.55s ease-out forwards",
+        transform:`translate(calc(-50% + ${tx}px),calc(-50% + ${ty}px)) scale(0)`,
+      }}/>);
+    })}
   </div>);
 }
 
@@ -1955,18 +2067,18 @@ export default function App(){
       color:"#f9d71c",
     },
     {
-      em:"🌅",
-      title:"오늘 하루가\n번호가 돼요",
-      desc:"기분·날씨·걸음수·식사·행운\n오늘의 기록이 그대로 번호로",
-      sub:"불꽃놀이·휠·아파트 등 다양한 방법으로",
+      em:"📍",
+      title:"내 주변 명당의\n기운을 받아요",
+      desc:"GPS로 근처 로또 명당을 찾고\n그 좌표로 번호를 뽑아요",
+      sub:"전국 명당 데이터 내장 · 좌표 기반 번호",
       bg:"linear-gradient(160deg,#0a0818,#150820)",
       color:"#ff9800",
     },
     {
-      em:"⭐",
-      title:"내 정보를 넣으면\n더 정확해져요",
-      desc:"생년도를 입력하면 띠별 운세와\n행운 번호까지 확인할 수 있어요",
-      sub:"나이·띠·혈액형으로 맞춤 번호 추출",
+      em:"💩",
+      title:"꿈에서도\n행운을 찾아요",
+      desc:"어젯밤 꿈 키워드 + 역대 당첨 빈도\n조합으로 번호를 뽑아요",
+      sub:"💩 똥꿈 꿨다면? 재물운 1순위!",
       bg:"linear-gradient(160deg,#080820,#100830)",
       color:"#b44aff",
     },
@@ -2127,7 +2239,7 @@ export default function App(){
       {/* 메뉴 */}
       <div style={{width:"100%",maxWidth:420,padding:"0 16px 24px"}}>
         {MENUS.map((m,i)=>(
-          <button key={m.id} onClick={()=>setScreen(m.id)} style={{
+          <button key={m.id} onClick={()=>{SFX.pop();setScreen(m.id);}} style={{
             width:"100%",marginBottom:9,
             background:m.grad,border:`1px solid ${m.border}`,borderRadius:16,
             padding:"14px 18px",display:"flex",alignItems:"center",gap:14,
