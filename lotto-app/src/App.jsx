@@ -101,6 +101,42 @@ const SFX={
 // ════════════════════════════════════════════════════════════
 // 공통 UI
 // ════════════════════════════════════════════════════════════
+// 벚꽃 공통
+function spawnPetals(){
+  return Array.from({length:28},(_,i)=>({
+    id:i,
+    x:5+Math.random()*90,
+    delay:Math.random()*1.8,
+    dur:2.5+Math.random()*2,
+    size:6+Math.random()*8,
+    color:["#ffb7c5","#ffc0cb","#ff9eb5","#ffaab5","#ffe4e8"][i%5],
+  }));
+}
+function PetalOverlay({petals}){
+  if(!petals||petals.length===0)return null;
+  return(<>
+    {petals.map(p=>(
+      <div key={p.id} style={{
+        position:"fixed",left:`${p.x}%`,top:"-20px",
+        width:p.size,height:p.size*0.8,
+        borderRadius:"50% 50% 50% 50% / 60% 60% 40% 40%",
+        background:`radial-gradient(ellipse at 40% 40%,${p.color}ee,${p.color}99)`,
+        pointerEvents:"none",zIndex:9998,
+        boxShadow:`0 0 4px ${p.color}66`,
+        animation:`petalFall ${p.dur}s ease-in ${p.delay}s forwards`,
+      }}/>
+    ))}
+    <style>{`@keyframes petalFall{
+      0%  {top:-20px;transform:rotate(0deg) translateX(0);opacity:1;}
+      20% {transform:rotate(72deg) translateX(18px);}
+      40% {transform:rotate(144deg) translateX(-18px);}
+      60% {transform:rotate(216deg) translateX(22px);}
+      80% {transform:rotate(288deg) translateX(-12px);}
+      100%{top:110vh;transform:rotate(360deg) translateX(0);opacity:0;}
+    }`}</style>
+  </>);
+}
+
 function Balls({nums,size=50}){
   return(
     <div style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
@@ -220,6 +256,7 @@ function TodayScreen({profile,onSave,onShare,onBack}){
   const[lucky,setLucky]=useState(null);
   const[nums,setNums]=useState(null);
   const[petals,setPetals]=useState([]);
+  const triggerPetals=()=>{setPetals(spawnPetals());setTimeout(()=>setPetals([]),5000);};
   const[realWeather,setRealWeather]=useState(null);
   const[weatherLabel,setWeatherLabel]=useState(null);
   const[ptcls,setPtcls]=useState([]);
@@ -275,19 +312,7 @@ function TodayScreen({profile,onSave,onShare,onBack}){
     if(profile){const z=getZodiac(parseInt(profile.year));const zn=ZODIAC_NUMS[z];if(zn)pool.push(...zn.slice(0,3));}
     setNums(pickNums(pool));
     SFX.chime();
-    // 벚꽃 이펙트
-    const newPetals=Array.from({length:28},(_,i)=>({
-      id:i,
-      x:5+Math.random()*90,      // 화면 가로 위치 %
-      delay:Math.random()*1.8,    // 떨어지기 시작 딜레이
-      dur:2.5+Math.random()*2,    // 떨어지는 속도
-      size:6+Math.random()*8,     // 꽃잎 크기
-      rotate:Math.random()*360,   // 초기 회전
-      swing:20+Math.random()*30,  // 좌우 흔들림 폭
-      color:["#ffb7c5","#ffc0cb","#ff9eb5","#ffaab5","#ffe4e8"][i%5],
-    }));
-    setPetals(newPetals);
-    setTimeout(()=>setPetals([]),5000);
+    triggerPetals();
   };
 
   const canGenerate=mood!==null&&weather!==null;
@@ -303,19 +328,7 @@ function TodayScreen({profile,onSave,onShare,onBack}){
   });
 
   return(<div style={W}>
-    {/* 벚꽃 꽃잎 */}
-    {petals.map(p=>(
-      <div key={p.id} style={{
-        position:"fixed",
-        left:`${p.x}%`,top:"-20px",
-        width:p.size,height:p.size*0.8,
-        borderRadius:"50% 50% 50% 50% / 60% 60% 40% 40%",
-        background:`radial-gradient(ellipse at 40% 40%,${p.color}ee,${p.color}99)`,
-        pointerEvents:"none",zIndex:9998,
-        boxShadow:`0 0 4px ${p.color}66`,
-        animation:`petalFall ${p.dur}s ease-in ${p.delay}s forwards`,
-      }}/>
-    ))}
+    <PetalOverlay petals={petals}/>
     {/* 날씨 파티클 */}
     {ptcls.length>0&&<div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
       {ptcls.map(p=>(
@@ -411,14 +424,6 @@ function TodayScreen({profile,onSave,onShare,onBack}){
     </div>
     <style>{`
       @keyframes ptclFall{0%{transform:translateY(-10px) rotate(0)}100%{transform:translateY(110vh) rotate(360deg)}}
-      @keyframes petalFall{
-        0%  {top:-20px;transform:rotate(0deg) translateX(0);opacity:1;}
-        20% {transform:rotate(72deg) translateX(18px);}
-        40% {transform:rotate(144deg) translateX(-18px);}
-        60% {transform:rotate(216deg) translateX(22px);}
-        80% {transform:rotate(288deg) translateX(-12px);}
-        100%{top:110vh;transform:rotate(360deg) translateX(0);opacity:0;}
-      }
     `}</style>
   </div>);
 }
@@ -516,7 +521,9 @@ function DreamScreen({onSave,onShare,onBack}){
   const[picked,setPicked]=useState(null);
   const floats=["✨","🌙","⭐","💫","🌟","☁️"];
 
-  const selectSub=(subKey,vals)=>{setPicked(subKey);setNums(dreamPick(vals));SFX.chime();};
+  const[petals,setPetals]=useState([]);
+  const triggerPetals=()=>{setPetals(spawnPetals());setTimeout(()=>setPetals([]),5000);};
+  const selectSub=(subKey,vals)=>{setPicked(subKey);setNums(dreamPick(vals));SFX.chime();triggerPetals();};
   const reset=()=>{setCat(null);setNums([]);setPicked(null);};
 
   const W={minHeight:"100%",background:"linear-gradient(160deg,#050210,#0a0520,#120830,#0a0520)",
@@ -527,6 +534,7 @@ function DreamScreen({onSave,onShare,onBack}){
     const isPoop=cat===POOP_CAT;
     const dreamNums=TREE[cat][picked];
     return(<div style={W}>
+      <PetalOverlay petals={petals}/>
       {floats.map((f,i)=>(<div key={i} style={{position:"absolute",fontSize:16+i*2,
         left:`${(i*19+3)%95}%`,top:`${(i*27+5)%85}%`,opacity:0.08,pointerEvents:"none"}}>{f}</div>))}
       <div style={{textAlign:"center",maxWidth:390,width:"100%",zIndex:1}}>
@@ -556,7 +564,7 @@ function DreamScreen({onSave,onShare,onBack}){
               </div>);})}
           </div>
           <NumLine nums={nums}/>
-          <div style={{fontSize:10,color:"#555",marginTop:6}}>{isPoop?"💩":"🌙"} = 꿈 직결 · 📊 역대 빈도 반영</div>
+          <div style={{fontSize:10,color:"#555",marginTop:6}}>{isPoop?"💩":"🌙"} = 꿈 직결 · 📊 2025년 당첨 빈도 반영</div>
         </div>
         <ActionBtns nums={nums} mode="🌙 꿈해몽" onSave={onSave} onShare={onShare}/>
         <div style={{display:"flex",gap:8,marginTop:10,justifyContent:"center"}}>
@@ -587,7 +595,7 @@ function DreamScreen({onSave,onShare,onBack}){
         <div style={{fontSize:13,color:"#b44aff",fontWeight:700,marginBottom:3}}>
           {!cat?"어젯밤 꿈에서 무엇을 봤나요?":cat+" 에서 무엇을 봤나요?"}
         </div>
-        <div style={{fontSize:10,color:"#555"}}>꿈 키워드 + 역대 당첨 빈도 조합으로 번호를 뽑아요</div>
+        <div style={{fontSize:10,color:"#555"}}>꿈 키워드 + 역대 당첨 빈도 조합으로 번호를 뽑아요 · 2025년 기준</div>
       </div>
       {!cat&&(
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
@@ -629,6 +637,8 @@ function FortuneScreen({profile,onSave,onShare,onBack}){
   const[now,setNow]=useState(new Date());
   const[nums,setNums]=useState([]);
   const[generated,setGenerated]=useState(false);
+  const[petals,setPetals]=useState([]);
+  const triggerPetals=()=>{setPetals(spawnPetals());setTimeout(()=>setPetals([]),5000);};
   const[stars]=useState(()=>Array.from({length:60},(_,i)=>({
     id:i, x:(i*37+11)%100, y:(i*23+7)%100,
     size:i%7===0?2:i%3===0?1.5:1, twinkle:2+Math.random()*4, delay:Math.random()*3,
@@ -670,6 +680,7 @@ function FortuneScreen({profile,onSave,onShare,onBack}){
     setNums(pickNums(pool));
     setGenerated(true);
     SFX.chime();
+    triggerPetals();
   };
 
   // 볼 렌더 (null이면 ~ 표시)
@@ -695,6 +706,7 @@ function FortuneScreen({profile,onSave,onShare,onBack}){
     position:"relative",overflow:"hidden"};
 
   return(<div style={W}>
+    <PetalOverlay petals={petals}/>
     <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}} viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
       {LINES.map((l,i)=>{const s1=stars[l[0]],s2=stars[l[1]];return(<line key={i} x1={s1.x} y1={s1.y} x2={s2.x} y2={s2.y} stroke="rgba(180,200,255,0.08)" strokeWidth="0.3"/>);})}
       {stars.map(s=>(<circle key={s.id} cx={s.x} cy={s.y} r={s.size*0.3} fill="white" opacity={0.6} style={{animation:`starTwinkle ${s.twinkle}s ease-in-out ${s.delay}s infinite`}}/>))}
@@ -843,6 +855,8 @@ function LocationScreen({onSave,onShare,onBack}){
   const[nums,setNums]=useState([]);
   const[coordInfo,setCoordInfo]=useState(null);
   const[locErr,setLocErr]=useState(false);
+  const[petals,setPetals]=useState([]);
+  const triggerPetals=()=>{setPetals(spawnPetals());setTimeout(()=>setPetals([]),5000);};
   const alive=useRef(true);
 
   useEffect(()=>{
@@ -867,7 +881,7 @@ function LocationScreen({onSave,onShare,onBack}){
     const angle=locAngle(myLoc.lat,myLoc.lng,selected.lat,selected.lng);
     setCoordInfo({dist,angle,dLat:Math.abs(selected.lat-myLoc.lat),dLng:Math.abs(selected.lng-myLoc.lng)});
     setNums(locPickNums(myLoc.lat,myLoc.lng,selected));
-    setPhase("result");SFX.chime();
+    setPhase("result");SFX.chime();triggerPetals();
   };
 
   const reset=()=>{setSelected(null);setNums([]);setPhase("map");setCoordInfo(null);};
@@ -913,16 +927,45 @@ function LocationScreen({onSave,onShare,onBack}){
 
   const W={minHeight:"100%",background:"linear-gradient(180deg,#010208,#030816,#05122a)",
     display:"flex",flexDirection:"column",alignItems:"center",
-    padding:"10px 14px 24px",boxSizing:"border-box",color:"#fff"};
+    padding:"10px 14px 24px",boxSizing:"border-box",color:"#fff",
+    position:"relative",overflow:"hidden"};
 
   return(<div style={W}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",maxWidth:400,marginBottom:12}}>
+    <PetalOverlay petals={petals}/>
+    {/* 격자 좌표선 배경 */}
+    <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0}}>
+      <svg width="100%" height="100%" style={{position:"absolute",inset:0}} xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(105,200,242,0.07)" strokeWidth="0.8"/>
+          </pattern>
+          <pattern id="gridLarge" width="120" height="120" patternUnits="userSpaceOnUse">
+            <path d="M 120 0 L 0 0 0 120" fill="none" stroke="rgba(105,200,242,0.12)" strokeWidth="1"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)"/>
+        <rect width="100%" height="100%" fill="url(#gridLarge)"/>
+        {/* 위도 라벨 */}
+        {[0,25,50,75,100].map((y,i)=>(
+          <text key={i} x="4" y={`${y}%`} fontSize="7" fill="rgba(105,200,242,0.2)" fontFamily="monospace">
+            {(35.5-(i*0.3)).toFixed(1)}°N
+          </text>
+        ))}
+        {/* 경도 라벨 */}
+        {[10,30,50,70,90].map((x,i)=>(
+          <text key={i} x={`${x}%`} y="99%" fontSize="7" fill="rgba(105,200,242,0.2)" fontFamily="monospace">
+            {(126.5+(i*0.3)).toFixed(1)}°E
+          </text>
+        ))}
+      </svg>
+    </div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",maxWidth:400,marginBottom:12,position:"relative",zIndex:1}}>
       <button onClick={onBack} style={{background:"none",border:"none",color:"#666",fontSize:13,cursor:"pointer"}}>← 홈</button>
       <span style={{fontSize:13,fontWeight:900,color:"#f9d71c"}}>📍 우리동네 명당</span>
       <div style={{width:40}}/>
     </div>
 
-    <div style={{width:"100%",maxWidth:400}}>
+    <div style={{width:"100%",maxWidth:400,position:"relative",zIndex:1}}>
       {phase==="locating"&&(
         <div style={{textAlign:"center",padding:"60px 0"}}>
           <div style={{fontSize:40,marginBottom:12}}>📍</div>
@@ -1063,16 +1106,43 @@ function FormulaScreen({onSave,onShare,onBack}){
   const[dates,setDates]=useState({});
   const[sel,setSel]=useState([]);
   const[nums,setNums]=useState([]);
+  const[petals,setPetals]=useState([]);
+  const triggerPetals=()=>{setPetals(spawnPetals());setTimeout(()=>setPetals([]),5000);};
   const[flames,setFlames]=useState(Array.from({length:5},()=>({h:Math.random()*10,flicker:Math.random()})));
   const alive=useRef(true);
+
+  // 저장된 날짜 불러오기
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const d=await window.storage.get("v2_family_dates");
+        const s=await window.storage.get("v2_family_sel");
+        if(d)setDates(JSON.parse(d.value));
+        if(s)setSel(JSON.parse(s.value));
+      }catch(e){}
+    })();
+  },[]);
+
   useEffect(()=>{
     alive.current=true;
     const iv=setInterval(()=>{if(!alive.current)return;setFlames(prev=>prev.map(f=>({...f,h:Math.random()*10,flicker:Math.random()})));},700);
     return()=>{alive.current=false;clearInterval(iv);};
   },[]);
 
-  const toggleMember=(id)=>setSel(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id]);
-  const setDate=(id,val)=>setDates(prev=>({...prev,[id]:val}));
+  const toggleMember=(id)=>{
+    setSel(prev=>{
+      const next=prev.includes(id)?prev.filter(x=>x!==id):[...prev,id];
+      try{window.storage.set("v2_family_sel",JSON.stringify(next));}catch(e){}
+      return next;
+    });
+  };
+  const setDate=(id,val)=>{
+    setDates(prev=>{
+      const next={...prev,[id]:val};
+      try{window.storage.set("v2_family_dates",JSON.stringify(next));}catch(e){}
+      return next;
+    });
+  };
 
   const generate=()=>{
     const pool=[];
@@ -1090,14 +1160,28 @@ function FormulaScreen({onSave,onShare,onBack}){
     });
     while(pool.length<6)pool.push(Math.floor(Math.random()*45)+1);
     setNums(pickNums(pool));
-    SFX.chime();
+    SFX.chime();triggerPetals();
   };
 
   const canGen=sel.length>0&&sel.every(id=>dates[id]&&dates[id].replace(/\D/g,"").length>=8);
 
+  // 색종이 데이터
+  const[confetti]=useState(()=>Array.from({length:25},(_,i)=>({
+    id:i,
+    x:Math.random()*100,
+    dur:6+Math.random()*8,
+    delay:-(Math.random()*12),
+    size:5+Math.random()*7,
+    rotate:Math.random()*360,
+    color:["#ff6b6b","#ffd93d","#6bcb77","#4d96ff","#ff9eb5","#c77dff","#ff9800","#69c8f2"][i%8],
+    isRect:Math.random()>0.5,
+    swing:15+Math.random()*25,
+  })));
+
   const W={minHeight:"100%",background:"linear-gradient(180deg,#080400,#120800,#0a0500)",
     display:"flex",flexDirection:"column",alignItems:"center",
-    padding:"12px 14px 24px",boxSizing:"border-box",color:"#fff"};
+    padding:"12px 14px 24px",boxSizing:"border-box",color:"#fff",
+    position:"relative",overflow:"hidden"};
 
   const CandleComp=({h,flicker})=>{
     const fh=14+h*0.4;
@@ -1114,7 +1198,32 @@ function FormulaScreen({onSave,onShare,onBack}){
   };
 
   return(<div style={W}>
-    <div style={{width:"100%",maxWidth:390}}>
+    <PetalOverlay petals={petals}/>
+    {/* 색종이 배경 */}
+    <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
+      {confetti.map(c=>(
+        <div key={c.id} style={{
+          position:"absolute",
+          left:`${c.x}%`,top:"-20px",
+          width:c.isRect?c.size:c.size*0.7,
+          height:c.isRect?c.size*0.4:c.size,
+          borderRadius:c.isRect?"2px":"50%",
+          background:c.color,
+          opacity:0.25,
+          animation:`confettiFall ${c.dur}s ease-in ${c.delay}s infinite`,
+          transform:`rotate(${c.rotate}deg)`,
+        }}/>
+      ))}
+    </div>
+    <style>{`@keyframes confettiFall{
+      0%  {top:-20px;transform:rotate(0deg) translateX(0);opacity:0.3;}
+      20% {transform:rotate(120deg) translateX(${15}px);opacity:0.25;}
+      40% {transform:rotate(240deg) translateX(-${20}px);}
+      60% {transform:rotate(360deg) translateX(${10}px);}
+      80% {transform:rotate(480deg) translateX(-${15}px);opacity:0.2;}
+      100%{top:110vh;transform:rotate(600deg) translateX(0);opacity:0;}
+    }`}</style>
+    <div style={{width:"100%",maxWidth:390,position:"relative",zIndex:1}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <button onClick={onBack} style={{background:"none",border:"none",color:"#666",fontSize:13,cursor:"pointer"}}>← 홈</button>
         <div style={{textAlign:"center"}}>
@@ -1223,6 +1332,8 @@ function FormulaScreen({onSave,onShare,onBack}){
 function FavoritesScreen({favorites,onSaveFav,onSave,onShare,onBack}){
   const[lifetime,setLifetime]=useState(Array.isArray(favorites)&&favorites.length>0?[...favorites]:[]);
   const[tab,setTab]=useState("lifetime");
+  const[petals,setPetals]=useState([]);
+  const triggerPetals=()=>{setPetals(spawnPetals());setTimeout(()=>setPetals([]),5000);};
   const[extra,setExtra]=useState([]);
   const[nums,setNums]=useState([]);
   const[editMode,setEditMode]=useState(false);
@@ -1245,22 +1356,40 @@ function FavoritesScreen({favorites,onSaveFav,onSave,onShare,onBack}){
     const p=[...u].sort(()=>Math.random()-0.5).slice(0,6);
     while(p.length<6){const r=Math.floor(Math.random()*45)+1;if(!p.includes(r))p.push(r);}
     setNums(p.sort((a,b)=>a-b));
-    SFX.chime();
+    SFX.chime();triggerPetals();
   };
   const canGen=tab==="lifetime"?lifetime.length>0:(lifetime.length>0&&(need===0||extra.length===need));
+
+  // 숫자 비 배경 데이터
+  const[rainNums]=useState(()=>Array.from({length:20},(_,i)=>({
+    id:i,
+    num:Math.floor(Math.random()*45)+1,
+    x:Math.random()*100,
+    dur:8+Math.random()*12,
+    delay:-(Math.random()*15),
+    size:11+Math.floor(Math.random()*10),
+    opacity:0.06+Math.random()*0.1,
+  })));
 
   const W={minHeight:"100%",background:"#07060f",display:"flex",flexDirection:"column",
     color:"#fff",position:"relative",overflow:"hidden"};
 
   return(<div style={W}>
-    <div style={{position:"absolute",inset:0,pointerEvents:"none",
-      backgroundImage:`linear-gradient(rgba(180,74,255,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(180,74,255,0.06) 1px,transparent 1px)`,
-      backgroundSize:"28px 28px"}}/>
-    <div style={{position:"absolute",inset:0,pointerEvents:"none",
-      backgroundImage:`radial-gradient(circle,rgba(180,74,255,0.12) 1px,transparent 1px)`,
-      backgroundSize:"28px 28px"}}/>
-
-    {/* 헤더 + 탭 */}
+    <PetalOverlay petals={petals}/>
+    {/* 숫자 비 배경 */}
+    <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
+      {rainNums.map(r=>(
+        <div key={r.id} style={{
+          position:"absolute",left:`${r.x}%`,top:"-40px",
+          fontSize:r.size,fontWeight:900,
+          color:`rgba(249,215,28,${r.opacity})`,
+          fontFamily:"monospace",letterSpacing:0,
+          animation:`numRain ${r.dur}s linear ${r.delay}s infinite`,
+          userSelect:"none",
+        }}>{String(r.num).padStart(2,"0")}</div>
+      ))}
+    </div>
+    <style>{`@keyframes numRain{0%{top:-40px;opacity:0;}5%{opacity:1;}90%{opacity:1;}100%{top:110vh;opacity:0;}}`}</style>
     <div style={{position:"sticky",top:0,zIndex:10,background:"rgba(7,6,15,0.96)",
       borderBottom:"1px solid rgba(255,255,255,0.06)",padding:"14px 16px 0"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
@@ -1465,6 +1594,8 @@ const TOTAL_SPINS=6;
 function WheelScreen({onSave,onShare,onBack}){
   const[angle,setAngle]=useState(0);
   const[spinning,setSpinning]=useState(false);
+  const[petals,setPetals]=useState([]);
+  const triggerPetals=()=>{setPetals(spawnPetals());setTimeout(()=>setPetals([]),5000);};
   const[spinCount,setSpinCount]=useState(0);
   const[collected,setCollected]=useState([]);
   const[nums,setNums]=useState([]);
@@ -1485,6 +1616,26 @@ function WheelScreen({onSave,onShare,onBack}){
     const duration=4500;
     const start=Date.now();
     const startA=angleRef.current;
+
+    // 래칫 소리 - 처음엔 빠르게, 점점 느려짐
+    let lastTickAngle=0;
+    const TICK_EVERY=36; // 매 36도마다 틱 소리
+    const tickIv=setInterval(()=>{
+      if(!alive.current){clearInterval(tickIv);return;}
+      const t=Math.min((Date.now()-start)/duration,1);
+      if(t>=1){clearInterval(tickIv);return;}
+      const ease=1-Math.pow(1-t,4);
+      const curAngle=(startA+extra*ease)%360;
+      const diff=Math.abs(curAngle-lastTickAngle);
+      if(diff>=TICK_EVERY){
+        lastTickAngle=curAngle;
+        // 속도에 따라 음정 변화: 빠를수록 높고, 느려질수록 낮아짐
+        const speed=1-t; // 0~1 (1=빠름, 0=느림)
+        const freq=200+speed*400;
+        SFX.tone(freq,0.04,"square",0.08);
+      }
+    },30);
+
     const tick=()=>{
       if(!alive.current)return;
       const t=Math.min((Date.now()-start)/duration,1);
@@ -1505,7 +1656,7 @@ function WheelScreen({onSave,onShare,onBack}){
         const sc=spinCount+1;
         setSpinCount(sc);
         if(sc>=TOTAL_SPINS){
-          setTimeout(()=>{if(alive.current){setNums(pickNums(collectedRef.current));setPhase("result");}},1500);
+          setTimeout(()=>{if(alive.current){setNums(pickNums(collectedRef.current));setPhase("result");triggerPetals();}},1500);
         }
       }
     };
@@ -1532,7 +1683,7 @@ function WheelScreen({onSave,onShare,onBack}){
     padding:"10px 14px",boxSizing:"border-box",color:"#fff",position:"relative",overflow:"hidden"};
 
   if(phase==="result")return(<div style={W}>
-    <div style={{textAlign:"center",maxWidth:390,width:"100%"}}>
+    <PetalOverlay petals={petals}/>    <div style={{textAlign:"center",maxWidth:390,width:"100%"}}>
       <div style={{fontSize:44,marginBottom:4}}>🎡</div>
       <h2 style={{fontSize:20,fontWeight:900,color:"#f9d71c",margin:"0 0 4px"}}>행운의 휠 번호</h2>
       <p style={{color:"#555",fontSize:11,marginBottom:14}}>{TOTAL_SPINS}번 스핀 결과</p>
@@ -1546,6 +1697,7 @@ function WheelScreen({onSave,onShare,onBack}){
   </div>);
 
   return(<div style={W}>
+    <PetalOverlay petals={petals}/>
     {/* 배경 별 */}
     {Array.from({length:20},(_,i)=>(
       <div key={i} style={{position:"absolute",
@@ -1722,6 +1874,8 @@ function ApartmentScreen({onSave,onShare,onBack}){
   const[nums,setNums]=useState([]);
   const[miss,setMiss]=useState(false);
   const[sparks,setSparks]=useState([]);
+  const[petals,setPetals]=useState([]);
+  const triggerPetals=()=>{setPetals(spawnPetals());setTimeout(()=>setPetals([]),5000);};
   const alive=useRef(true);
   const ivRef=useRef(null);
   const sparkId=useRef(0);
@@ -1759,7 +1913,7 @@ function ApartmentScreen({onSave,onShare,onBack}){
       const next=[...collected,num];
       setCollected(next);
       setGrid(prev=>{const n=prev.map(b=>b.map(r=>[...r]));n[bi][fi][ui]="off";return n;});
-      if(next.length>=MAX_TAPS){setNums(pickNums(next));setPhase("result");SFX.chime();}
+      if(next.length>=MAX_TAPS){setNums(pickNums(next));setPhase("result");SFX.chime();triggerPetals();}
       else{ivRef.current=setInterval(()=>{if(!alive.current)return;setGrid(randomGrid());},1100);}
     } else {
       if(miss)return;
@@ -1775,6 +1929,7 @@ function ApartmentScreen({onSave,onShare,onBack}){
     padding:"10px 14px 24px",boxSizing:"border-box",color:"#fff"};
 
   return(<div style={W}>
+    <PetalOverlay petals={petals}/>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",maxWidth:420,marginBottom:6}}>
       <button onClick={onBack} style={{background:"none",border:"none",color:"#666",fontSize:13,cursor:"pointer"}}>← 홈</button>
       <span style={{fontSize:14,fontWeight:900,color:"#f9d71c"}}>🏢 오늘 밤 불빛</span>
