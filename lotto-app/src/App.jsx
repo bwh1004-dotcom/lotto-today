@@ -3383,6 +3383,9 @@ function getLottoCD(){
   const d=s-n;
   const weekMs=7*24*60*60*1000;
   const elapsed=weekMs-d;
+  // 회차 계산 (1회차: 2002년 12월 7일) - 다음 추첨 회차
+  const firstDraw=new Date('2002-12-07');
+  const drwNo=Math.floor((n-firstDraw)/weekMs)+2;
   return{
     days:Math.floor(d/86400000),
     hours:Math.floor((d%86400000)/3600000),
@@ -3390,6 +3393,7 @@ function getLottoCD(){
     secs:Math.floor((d%60000)/1000),
     pct:Math.max(0,Math.min(100,(elapsed/weekMs)*100)),
     urgent:d<3600000,vurgent:d<600000,
+    drwNo,
   };
 }
 
@@ -3684,7 +3688,7 @@ export default function App(){
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
             <div>
               <div style={{fontSize:10,color:cd.urgent?"#ff7070":"#664400",fontWeight:700,letterSpacing:2,marginBottom:8}}>
-                이번 회차 마감
+                🎰 제{cd.drwNo}회 마감까지
               </div>
               <div style={{display:"flex",alignItems:"baseline",gap:3}}>
                 {cd.days>0&&(<>
