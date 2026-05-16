@@ -2745,6 +2745,7 @@ function ApartmentScreen({onSave,onShare,onBack}){
         transform:`translate(calc(-50% + ${tx}px),calc(-50% + ${ty}px)) scale(0)`,
       }}/>);
     })}
+  </>}
   </div>);
 }
 
