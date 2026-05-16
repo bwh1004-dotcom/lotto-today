@@ -768,24 +768,24 @@ function DreamScreen({onSave,onShare,onBack}){
 
       {/* 취침/기상 시간 입력 */}
       <div style={{background:"rgba(180,74,255,0.04)",border:"1px solid rgba(180,74,255,0.1)",
-        borderRadius:12,padding:"12px 10px",marginBottom:12,overflow:"hidden"}}>
+        borderRadius:12,padding:"12px 10px",marginBottom:12,boxSizing:"border-box"}}>
         <div style={{fontSize:11,color:"#886699",marginBottom:10,fontWeight:700}}>🌙 수면 시간 (선택)</div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 24px 1fr",gap:4,alignItems:"end",marginBottom:8}}>
-          <div>
+        <div style={{display:"flex",gap:6,alignItems:"flex-end",marginBottom:8}}>
+          <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:10,color:"#555",marginBottom:4}}>취침</div>
             <input type="time" value={sleepTime} onChange={e=>setSleepTime(e.target.value)}
-              style={{width:"100%",background:"rgba(255,255,255,0.05)",
+              style={{width:"100%",maxWidth:"100%",background:"rgba(255,255,255,0.05)",
                 border:`1px solid ${sleepTime?"rgba(180,74,255,0.4)":"rgba(255,255,255,0.08)"}`,
-                borderRadius:8,padding:"8px 4px",color:"#fff",fontSize:13,
+                borderRadius:8,padding:"8px 2px",color:"#fff",fontSize:12,
                 fontWeight:700,outline:"none",boxSizing:"border-box",textAlign:"center"}}/>
           </div>
-          <div style={{color:"#444",fontSize:14,textAlign:"center",paddingBottom:4}}>→</div>
-          <div>
+          <div style={{color:"#444",fontSize:13,flexShrink:0,paddingBottom:6}}>→</div>
+          <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:10,color:"#555",marginBottom:4}}>기상</div>
             <input type="time" value={wakeTime} onChange={e=>setWakeTime(e.target.value)}
-              style={{width:"100%",background:"rgba(255,255,255,0.05)",
+              style={{width:"100%",maxWidth:"100%",background:"rgba(255,255,255,0.05)",
                 border:`1px solid ${wakeTime?"rgba(180,74,255,0.4)":"rgba(255,255,255,0.08)"}`,
-                borderRadius:8,padding:"8px 4px",color:"#fff",fontSize:13,
+                borderRadius:8,padding:"8px 2px",color:"#fff",fontSize:12,
                 fontWeight:700,outline:"none",boxSizing:"border-box",textAlign:"center"}}/>
           </div>
         </div>
