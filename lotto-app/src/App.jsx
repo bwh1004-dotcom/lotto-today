@@ -3089,6 +3089,23 @@ function ProfileScreen({profile,onSave,onBack}){
 // ════════════════════════════════════════════════════════════
 // 메인 앱
 // ════════════════════════════════════════════════════════════
+function getLottoCD(){
+  const n=new Date(),s=new Date(n);
+  s.setDate(n.getDate()+((n.getDay()===6?0:6-n.getDay())||7));
+  s.setHours(20,0,0,0);if(s<=n)s.setDate(s.getDate()+7);
+  const d=s-n;
+  const weekMs=7*24*60*60*1000;
+  const elapsed=weekMs-d;
+  return{
+    days:Math.floor(d/86400000),
+    hours:Math.floor((d%86400000)/3600000),
+    mins:Math.floor((d%3600000)/60000),
+    secs:Math.floor((d%60000)/1000),
+    pct:Math.max(0,Math.min(100,(elapsed/weekMs)*100)),
+    urgent:d<3600000,vurgent:d<600000,
+  };
+}
+
 export default function App(){
   const[screen,setScreen]=useState("loading");
   const[profile,setProfile]=useState(null);
@@ -3096,6 +3113,13 @@ export default function App(){
   const[saved,setSaved]=useState([]);
   const[shareData,setShareData]=useState(null);
   const[onboardStep,setOnboardStep]=useState(0);
+  const[cd,setCD]=useState(()=>getLottoCD());
+  const[cdBlink,setCdBlink]=useState(false);
+
+  useEffect(()=>{
+    const iv=setInterval(()=>{setCD(getLottoCD());setCdBlink(b=>!b);},1000);
+    return()=>clearInterval(iv);
+  },[]);
 
   useEffect(()=>{
     (async()=>{
@@ -3268,28 +3292,6 @@ export default function App(){
   }
   if(screen==="profile")return(<div style={W}><ProfileScreen profile={profile} onSave={saveProfile} onBack={goHome}/></div>);
 
-  const getLottoCD=()=>{
-    const n=new Date(),s=new Date(n);
-    s.setDate(n.getDate()+((n.getDay()===6?0:6-n.getDay())||7));
-    s.setHours(20,0,0,0);if(s<=n)s.setDate(s.getDate()+7);
-    const d=s-n;
-    const weekMs=7*24*60*60*1000;
-    const elapsed=weekMs-d;
-    return{
-      days:Math.floor(d/86400000),
-      hours:Math.floor((d%86400000)/3600000),
-      mins:Math.floor((d%3600000)/60000),
-      secs:Math.floor((d%60000)/1000),
-      pct:Math.max(0,Math.min(100,(elapsed/weekMs)*100)),
-      urgent:d<3600000,vurgent:d<600000,
-    };
-  };
-  const[cd,setCD]=useState(getLottoCD());
-  const[cdBlink,setCdBlink]=useState(false);
-  useEffect(()=>{
-    const iv=setInterval(()=>{setCD(getLottoCD());setCdBlink(b=>!b);},1000);
-    return()=>clearInterval(iv);
-  },[]);
   const num=(n,w)=>String(n).padStart(w||2,"0");
 
   const SCREENS={
