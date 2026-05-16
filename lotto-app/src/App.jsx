@@ -155,11 +155,12 @@ function WishPopup({onSelect,onClose}){
   const wish=DREAM_WISHES.find(w=>w.id===picked);
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",
-      display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:9999}}
+      display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:99999}}
       onClick={done?onClose:undefined}>
       <div style={{width:"100%",maxWidth:420,background:"#0f0e1a",
         borderRadius:"20px 20px 0 0",padding:"20px 16px 36px",
-        border:"1px solid rgba(249,215,28,0.15)"}}
+        border:"1px solid rgba(249,215,28,0.15)",
+        maxHeight:"80vh",overflowY:"auto"}}
         onClick={e=>e.stopPropagation()}>
         <div style={{width:36,height:4,borderRadius:2,background:"#333",margin:"0 auto 16px"}}/>
 
@@ -269,21 +270,15 @@ function NumLine({nums}){
   );
 }
 function ActionBtns({nums,mode,onSave,onShare}){
-  const[showWish,setShowWish]=useState(false);
   return(
-    <>
-    {showWish&&<WishPopup
-      onSelect={(wishId)=>onSave(nums,mode,wishId)}
-      onClose={()=>setShowWish(false)}/>}
     <div style={{display:"flex",gap:8,marginTop:10}}>
-      <button onClick={()=>setShowWish(true)} style={{flex:1,padding:"11px",borderRadius:10,
+      <button onClick={()=>onSave(nums,mode)} style={{flex:1,padding:"11px",borderRadius:10,
         border:"1px solid rgba(80,200,120,0.25)",background:"rgba(80,200,120,0.08)",
         color:"#50c878",fontSize:13,fontWeight:700,cursor:"pointer"}}>💾 저장</button>
       <button onClick={()=>onShare(nums,mode)} style={{flex:1,padding:"11px",borderRadius:10,
         border:"1px solid rgba(249,215,28,0.2)",background:"rgba(249,215,28,0.06)",
         color:"#f9d71c",fontSize:13,fontWeight:700,cursor:"pointer"}}>📤 공유</button>
     </div>
-    </>
   );
 }
 
@@ -1436,20 +1431,30 @@ function LocationScreen({onSave,onShare,onBack}){
 
 function FormulaScreen({onSave,onShare,onBack}){
   const MEMBERS=[
-    {id:"father",    label:"아버지", color:"#ff9800", cake:{body:"#ff9800",cream:"#ffe0b2",candle:"#ff5722"}},
-    {id:"mother",    label:"어머니", color:"#ff7eb3", cake:{body:"#ff7eb3",cream:"#fce4ec",candle:"#e91e63"}},
-    {id:"wife",      label:"아내",   color:"#f06292", cake:{body:"#f06292",cream:"#fce4ec",candle:"#c2185b"}},
-    {id:"husband",   label:"남편",   color:"#69c8f2", cake:{body:"#69c8f2",cream:"#e3f2fd",candle:"#1976d2"}},
-    {id:"son1",      label:"아들①", color:"#81c784", cake:{body:"#81c784",cream:"#e8f5e9",candle:"#388e3c"}},
-    {id:"son2",      label:"아들②", color:"#4db6ac", cake:{body:"#4db6ac",cream:"#e0f2f1",candle:"#00796b"}},
-    {id:"son3",      label:"아들③", color:"#26a69a", cake:{body:"#26a69a",cream:"#e0f2f1",candle:"#004d40"}},
-    {id:"daughter1", label:"딸①",   color:"#ce93d8", cake:{body:"#ce93d8",cream:"#f3e5f5",candle:"#7b1fa2"}},
-    {id:"daughter2", label:"딸②",   color:"#ba68c8", cake:{body:"#ba68c8",cream:"#f3e5f5",candle:"#6a1b9a"}},
-    {id:"daughter3", label:"딸③",   color:"#ab47bc", cake:{body:"#ab47bc",cream:"#f3e5f5",candle:"#4a148c"}},
-    {id:"friend",    label:"친구",   color:"#ffb74d", cake:{body:"#ffb74d",cream:"#fff8e1",candle:"#f57c00"}},
+    {id:"father",    label:"아버지", color:"#ff9800", em:"🎂", cake:{body:"#ff9800",cream:"#ffe0b2",candle:"#ff5722"}},
+    {id:"mother",    label:"어머니", color:"#ff7eb3", em:"🎂", cake:{body:"#ff7eb3",cream:"#fce4ec",candle:"#e91e63"}},
+    {id:"wife",      label:"아내",   color:"#f06292", em:"🎂", cake:{body:"#f06292",cream:"#fce4ec",candle:"#c2185b"}},
+    {id:"husband",   label:"남편",   color:"#69c8f2", em:"🎂", cake:{body:"#69c8f2",cream:"#e3f2fd",candle:"#1976d2"}},
+    {id:"son1",      label:"아들①", color:"#81c784", em:"🎂", cake:{body:"#81c784",cream:"#e8f5e9",candle:"#388e3c"}},
+    {id:"son2",      label:"아들②", color:"#4db6ac", em:"🎂", cake:{body:"#4db6ac",cream:"#e0f2f1",candle:"#00796b"}},
+    {id:"son3",      label:"아들③", color:"#26a69a", em:"🎂", cake:{body:"#26a69a",cream:"#e0f2f1",candle:"#004d40"}},
+    {id:"daughter1", label:"딸①",   color:"#ce93d8", em:"🎂", cake:{body:"#ce93d8",cream:"#f3e5f5",candle:"#7b1fa2"}},
+    {id:"daughter2", label:"딸②",   color:"#ba68c8", em:"🎂", cake:{body:"#ba68c8",cream:"#f3e5f5",candle:"#6a1b9a"}},
+    {id:"daughter3", label:"딸③",   color:"#ab47bc", em:"🎂", cake:{body:"#ab47bc",cream:"#f3e5f5",candle:"#4a148c"}},
+    {id:"friend",    label:"친구",   color:"#ffb74d", em:"🎂", cake:{body:"#ffb74d",cream:"#fff8e1",candle:"#f57c00"}},
+    // 기념일
+    {id:"wedding",   label:"결혼기념일", color:"#f48fb1", em:"💒", cake:{body:"#f48fb1",cream:"#fce4ec",candle:"#e91e63"}},
+    {id:"firstbday", label:"첫돌",       color:"#80cbc4", em:"👶", cake:{body:"#80cbc4",cream:"#e0f2f1",candle:"#00796b"}},
+    {id:"movein",    label:"이사한 날",  color:"#90caf9", em:"🏠", cake:{body:"#90caf9",cream:"#e3f2fd",candle:"#1565c0"}},
+    {id:"lovestory", label:"연애기념일", color:"#ef9a9a", em:"💑", cake:{body:"#ef9a9a",cream:"#ffebee",candle:"#c62828"}},
   ];
 
-  const CakeIcon=({cake,size=40})=>(
+  const CakeIcon=({cake,em,size=40})=>{
+    if(em&&em!=="🎂") return(
+      <div style={{width:size,height:size,display:"flex",alignItems:"center",
+        justifyContent:"center",fontSize:size*0.65}}>{em}</div>
+    );
+    return(
     <svg width={size} height={size} viewBox="0 0 40 40">
       {/* 케익 몸통 */}
       <rect x="6" y="18" width="28" height="16" rx="3" fill={cake.body} opacity="0.9"/>
@@ -1463,7 +1468,8 @@ function FormulaScreen({onSave,onShare,onBack}){
       {/* 케익 장식선 */}
       <line x1="6" y1="26" x2="34" y2="26" stroke={cake.cream} strokeWidth="1" opacity="0.5"/>
     </svg>
-  );
+    );
+  };
 
   const[dates,setDates]=useState({});
   const[sel,setSel]=useState([]);
@@ -1521,15 +1527,28 @@ function FormulaScreen({onSave,onShare,onBack}){
       if(p2>=1&&p2<=45)pool.push(p2);
     }
     sel.forEach(id=>{
+      const m=MEMBERS.find(x=>x.id===id);
       const d=dates[id];if(!d)return;
       const parts=d.replace(/\D/g,"");
-      if(parts.length>=8){
-        const y=parseInt(parts.slice(2,4))%45+1;
-        const m=parseInt(parts.slice(4,6));
-        const day=parseInt(parts.slice(6,8));
-        if(y>=1&&y<=45)pool.push(y);
-        if(m>=1&&m<=12)pool.push(m);
-        if(day>=1&&day<=31)pool.push(day);
+      const isAnniv=m.em!=="🎂";
+      if(isAnniv){
+        // 기념일: MM.DD → 월, 일만 사용
+        if(parts.length>=4){
+          const mo=parseInt(parts.slice(0,2));
+          const day=parseInt(parts.slice(2,4));
+          if(mo>=1&&mo<=12)pool.push(mo);
+          if(day>=1&&day<=31)pool.push(day);
+        }
+      } else {
+        // 생일: YYYYMMDD
+        if(parts.length>=8){
+          const y=parseInt(parts.slice(2,4))%45+1;
+          const mo=parseInt(parts.slice(4,6));
+          const day=parseInt(parts.slice(6,8));
+          if(y>=1&&y<=45)pool.push(y);
+          if(mo>=1&&mo<=12)pool.push(mo);
+          if(day>=1&&day<=31)pool.push(day);
+        }
       }
     });
     while(pool.length<6)pool.push(Math.floor(Math.random()*45)+1);
@@ -1537,7 +1556,12 @@ function FormulaScreen({onSave,onShare,onBack}){
     SFX.chime();triggerPetals();
   };
 
-  const canGen=sel.length>0&&sel.every(id=>dates[id]&&dates[id].replace(/\D/g,"").length>=8);
+  const canGen=sel.length>0&&sel.every(id=>{
+    const m=MEMBERS.find(x=>x.id===id);
+    const isAnniv=m?.em!=="🎂";
+    const parts=(dates[id]||"").replace(/\D/g,"");
+    return isAnniv?parts.length>=4:parts.length>=8;
+  });
 
   // 색종이 데이터
   const[confetti]=useState(()=>Array.from({length:25},(_,i)=>({
@@ -1613,11 +1637,12 @@ function FormulaScreen({onSave,onShare,onBack}){
         {flames.map((f,i)=><CandleComp key={i} h={f.h} flicker={f.flicker}/>)}
       </div>
 
-      {/* 가족 선택 - 이니셜 아바타 4열 */}
+      {/* 가족 선택 */}
       <div style={{background:"rgba(255,150,0,0.04)",border:"1px solid rgba(255,150,0,0.1)",borderRadius:16,padding:14,marginBottom:12}}>
-        <div style={{fontSize:11,color:"#886633",marginBottom:12,fontWeight:700,letterSpacing:1}}>누구의 생년월일을 쓸까요?</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
-          {MEMBERS.map(m=>{
+        {/* 생일 섹션 */}
+        <div style={{fontSize:10,color:"#664400",fontWeight:700,letterSpacing:2,marginBottom:8}}>🎂 생일</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:14}}>
+          {MEMBERS.filter(m=>m.em==="🎂").map(m=>{
             const isSel=sel.includes(m.id);
             return(<button key={m.id} onClick={()=>{SFX.tone(isSel?300:520,0.08,"sine",0.12);toggleMember(m.id);}} style={{
               display:"flex",flexDirection:"column",alignItems:"center",gap:5,
@@ -1630,10 +1655,36 @@ function FormulaScreen({onSave,onShare,onBack}){
                 border:`2px solid ${isSel?m.color:"rgba(255,255,255,0.1)"}`,
                 display:"flex",alignItems:"center",justifyContent:"center",
                 transition:"all .2s",boxShadow:isSel?`0 0 14px ${m.color}44`:"none"}}>
-                <CakeIcon cake={m.cake} size={36}/>
+                <CakeIcon cake={m.cake} em={m.em} size={36}/>
               </div>
               <div style={{fontSize:9,color:isSel?m.color:"#555",fontWeight:isSel?700:400,
                 transition:"color .2s",textAlign:"center",lineHeight:1.3,whiteSpace:"nowrap"}}>
+                {m.label}
+              </div>
+            </button>);
+          })}
+        </div>
+        {/* 기념일 섹션 */}
+        <div style={{fontSize:10,color:"#664400",fontWeight:700,letterSpacing:2,marginBottom:8,
+          borderTop:"1px solid rgba(255,150,0,0.08)",paddingTop:12}}>📅 기념일</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
+          {MEMBERS.filter(m=>m.em!=="🎂").map(m=>{
+            const isSel=sel.includes(m.id);
+            return(<button key={m.id} onClick={()=>{SFX.tone(isSel?300:520,0.08,"sine",0.12);toggleMember(m.id);}} style={{
+              display:"flex",flexDirection:"column",alignItems:"center",gap:5,
+              background:"none",border:"none",cursor:"pointer",padding:"4px 2px",
+              opacity:isSel?1:0.38,transition:"opacity .2s,transform .15s",
+              transform:isSel?"scale(1.06)":"scale(1)"}}>
+              <div style={{
+                width:52,height:52,borderRadius:12,
+                background:isSel?`${m.color}22`:"rgba(255,255,255,0.04)",
+                border:`2px solid ${isSel?m.color:"rgba(255,255,255,0.1)"}`,
+                display:"flex",alignItems:"center",justifyContent:"center",
+                transition:"all .2s",boxShadow:isSel?`0 0 14px ${m.color}44`:"none"}}>
+                <CakeIcon cake={m.cake} em={m.em} size={36}/>
+              </div>
+              <div style={{fontSize:9,color:isSel?m.color:"#555",fontWeight:isSel?700:400,
+                transition:"color .2s",textAlign:"center",lineHeight:1.3}}>
                 {m.label}
               </div>
             </button>);
@@ -1646,7 +1697,9 @@ function FormulaScreen({onSave,onShare,onBack}){
         <div style={{background:"rgba(255,150,0,0.03)",border:"1px solid rgba(255,150,0,0.08)",borderRadius:16,padding:"4px 14px",marginBottom:12}}>
           {sel.map((id,idx)=>{
             const m=MEMBERS.find(x=>x.id===id);
-            const done=dates[id]&&dates[id].replace(/\D/g,"").length>=8;
+            const isAnniv=m.em!=="🎂";
+            const minLen=isAnniv?4:8;
+            const done=dates[id]&&dates[id].replace(/\D/g,"").length>=minLen;
             return(<div key={id} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 0",
               borderBottom:idx<sel.length-1?"1px solid rgba(255,150,0,0.06)":"none"}}>
               <div style={{
@@ -1655,7 +1708,7 @@ function FormulaScreen({onSave,onShare,onBack}){
                 border:`2px solid ${done?m.color:"rgba(255,255,255,0.08)"}`,
                 display:"flex",alignItems:"center",justifyContent:"center",
                 transition:"all .3s",opacity:done?1:0.5}}>
-                <CakeIcon cake={m.cake} size={28}/>
+                <CakeIcon cake={m.cake} em={m.em} size={28}/>
               </div>
               <div style={{flex:1}}>
                 <div style={{fontSize:11,marginBottom:5,fontWeight:700,color:done?m.color:"#665544"}}>
@@ -1665,11 +1718,15 @@ function FormulaScreen({onSave,onShare,onBack}){
                   onChange={e=>{
                     const v=e.target.value.replace(/\D/g,"");
                     let fmt=v;
-                    if(v.length>4)fmt=v.slice(0,4)+"."+v.slice(4);
-                    if(v.length>6)fmt=v.slice(0,4)+"."+v.slice(4,6)+"."+v.slice(6,8);
+                    if(isAnniv){
+                      if(v.length>2)fmt=v.slice(0,2)+"."+v.slice(2,4);
+                    } else {
+                      if(v.length>4)fmt=v.slice(0,4)+"."+v.slice(4);
+                      if(v.length>6)fmt=v.slice(0,4)+"."+v.slice(4,6)+"."+v.slice(6,8);
+                    }
                     setDate(id,fmt);
                   }}
-                  placeholder="YYYY.MM.DD" maxLength={10}
+                  placeholder={isAnniv?"MM.DD (월.일)":"YYYY.MM.DD"} maxLength={isAnniv?5:10}
                   style={{width:"100%",background:"rgba(255,255,255,0.04)",
                     border:`1px solid ${done?m.color+"55":"rgba(255,255,255,0.08)"}`,
                     borderRadius:8,padding:"8px 10px",color:"#fff",fontSize:14,
@@ -2748,19 +2805,34 @@ function VaultScreen({saved,onBack}){
   const[loading,setLoading]=useState(false);
   const[error,setError]=useState("");
   const[selectedId,setSelectedId]=useState(null);
+  const[manualWin,setManualWin]=useState(["","","","","",""]);
+  const[manualBonus,setManualBonus]=useState("");
 
   const fetchWinNums=async()=>{
     if(!drwNo||isNaN(drwNo))return;
     setLoading(true);setError("");setWinNums(null);setBonusNum(null);
     try{
-      const res=await fetch(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${drwNo}`);
+      const url=`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${drwNo}`;
+      const res=await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
       const data=await res.json();
       if(data.returnValue==="success"){
         setWinNums([data.drwtNo1,data.drwtNo2,data.drwtNo3,data.drwtNo4,data.drwtNo5,data.drwtNo6]);
         setBonusNum(data.bnusNo);
+        setError("");
       } else setError("해당 회차 정보가 없어요");
-    }catch(e){setError("조회 실패. 네트워크를 확인해주세요");}
+    }catch(e){setError("조회 실패 — 아래에서 직접 입력해주세요");}
     setLoading(false);
+  };
+
+  const confirmManual=()=>{
+    const nums=manualWin.map(Number).filter(n=>n>=1&&n<=45);
+    const unique=[...new Set(nums)];
+    const bonus=parseInt(manualBonus);
+    if(unique.length!==6){setError("당첨번호 6개를 모두 입력해주세요");return;}
+    if(!bonus||bonus<1||bonus>45){setError("보너스 번호를 입력해주세요");return;}
+    setWinNums(unique.sort((a,b)=>a-b));
+    setBonusNum(bonus);
+    setError("");
   };
 
   const analyze=(nums)=>{
@@ -2831,31 +2903,75 @@ function VaultScreen({saved,onBack}){
 
       {/* 당첨분석 탭 */}
       {tab==="analysis"&&(<>
-        {/* 회차 입력 */}
+        {/* 당첨번호 입력 */}
         <div style={{...box({marginBottom:14,background:"rgba(249,215,28,0.05)",
           border:"1px solid rgba(249,215,28,0.15)"})}}>
-          <div style={{fontSize:11,color:"#886600",marginBottom:10,fontWeight:700}}>🎰 회차 입력</div>
-          <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:winNums?12:0}}>
-            <input type="tel" inputMode="numeric" value={drwNo} onChange={e=>setDrwNo(e.target.value.replace(/\D/g,""))}
-              placeholder="예: 1222" maxLength={4}
-              style={{width:"100%",background:"rgba(255,255,255,0.06)",
-                border:"1px solid rgba(249,215,28,0.2)",borderRadius:10,
-                padding:"10px 14px",color:"#fff",fontSize:16,fontWeight:700,outline:"none",
-                boxSizing:"border-box"}}/>
-            <button onClick={fetchWinNums} disabled={loading||!drwNo} style={{
-              width:"100%",padding:"11px",borderRadius:10,border:"none",
-              background:drwNo?"linear-gradient(135deg,#c8a800,#f9d71c)":"rgba(255,255,255,0.05)",
-              color:drwNo?"#000":"#444",fontSize:14,fontWeight:900,
-              cursor:drwNo?"pointer":"default"}}>
-              {loading?"조회중...":"🎰 당첨번호 조회"}
-            </button>
-          </div>
-          {error&&<div style={{fontSize:11,color:"#ff7272",marginTop:6}}>{error}</div>}
-          {/* 당첨번호 표시 */}
-          {winNums&&(
+          <div style={{fontSize:11,color:"#886600",marginBottom:10,fontWeight:700}}>🎰 당첨번호 확인</div>
+
+          {!winNums?(
+            <>
+              {/* API 조회 */}
+              <div style={{display:"flex",gap:8,marginBottom:10}}>
+                <input type="tel" inputMode="numeric" value={drwNo}
+                  onChange={e=>setDrwNo(e.target.value.replace(/\D/g,""))}
+                  placeholder="회차 예: 1145" maxLength={4}
+                  style={{flex:1,background:"rgba(255,255,255,0.06)",
+                    border:"1px solid rgba(249,215,28,0.2)",borderRadius:10,
+                    padding:"10px 14px",color:"#fff",fontSize:15,fontWeight:700,
+                    outline:"none",boxSizing:"border-box"}}/>
+                <button onClick={fetchWinNums} disabled={loading||!drwNo} style={{
+                  padding:"10px 16px",borderRadius:10,border:"none",
+                  background:drwNo?"linear-gradient(135deg,#c8a800,#f9d71c)":"rgba(255,255,255,0.05)",
+                  color:drwNo?"#000":"#444",fontSize:13,fontWeight:900,
+                  cursor:drwNo?"pointer":"default",whiteSpace:"nowrap"}}>
+                  {loading?"조회중...":"조회"}
+                </button>
+              </div>
+
+              {/* 구분선 */}
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                <div style={{flex:1,height:1,background:"rgba(255,255,255,0.06)"}}/>
+                <span style={{fontSize:10,color:"#333"}}>또는 직접 입력</span>
+                <div style={{flex:1,height:1,background:"rgba(255,255,255,0.06)"}}/>
+              </div>
+
+              {/* 수동 입력 */}
+              <div style={{display:"flex",gap:4,marginBottom:8,flexWrap:"wrap",justifyContent:"center"}}>
+                {manualWin.map((v,i)=>(
+                  <input key={i} type="tel" inputMode="numeric" value={v}
+                    onChange={e=>{
+                      const val=e.target.value.replace(/\D/g,"").slice(0,2);
+                      const next=[...manualWin];next[i]=val;setManualWin(next);
+                    }}
+                    maxLength={2} placeholder={`${i+1}`}
+                    style={{width:38,height:38,borderRadius:"50%",textAlign:"center",
+                      background:"rgba(255,255,255,0.06)",
+                      border:`1px solid ${v?"rgba(249,215,28,0.4)":"rgba(255,255,255,0.1)"}`,
+                      color:"#fff",fontSize:13,fontWeight:900,outline:"none"}}/>
+                ))}
+                <div style={{width:8}}/>
+                <input type="tel" inputMode="numeric" value={manualBonus}
+                  onChange={e=>setManualBonus(e.target.value.replace(/\D/g,"").slice(0,2))}
+                  maxLength={2} placeholder="보"
+                  style={{width:38,height:38,borderRadius:"50%",textAlign:"center",
+                    background:"rgba(255,150,0,0.08)",
+                    border:`1px solid ${manualBonus?"rgba(255,150,0,0.5)":"rgba(255,150,0,0.2)"}`,
+                    color:"#fff",fontSize:13,fontWeight:900,outline:"none"}}/>
+              </div>
+              <div style={{fontSize:9,color:"#444",textAlign:"center",marginBottom:8}}>
+                6개 번호 + 보너스(주황)
+              </div>
+              <button onClick={confirmManual} style={{
+                width:"100%",padding:"10px",borderRadius:10,border:"none",
+                background:"rgba(255,255,255,0.06)",
+                color:"#888",fontSize:13,fontWeight:700,cursor:"pointer"}}>
+                직접 입력 확인
+              </button>
+            </>
+          ):(
             <div>
-              <div style={{fontSize:10,color:"#886600",marginBottom:8}}>{drwNo}회 당첨번호</div>
-              <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}}>
+              <div style={{fontSize:10,color:"#886600",marginBottom:8}}>당첨번호</div>
+              <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap",marginBottom:8}}>
                 {winNums.map((n,i)=>{const c=ballColor(n);return(
                   <div key={i} style={{width:32,height:32,borderRadius:"50%",
                     background:`radial-gradient(circle at 35% 35%,${c.bg}dd,${c.bg})`,
@@ -2872,8 +2988,12 @@ function VaultScreen({saved,onBack}){
                 );})()}
                 <div style={{fontSize:9,color:"#555"}}>보너스</div>
               </div>
+              <button onClick={()=>{setWinNums(null);setBonusNum(null);setManualWin(["","","","","",""]);setManualBonus("");setDrwNo("");}}
+                style={{fontSize:11,color:"#555",background:"none",border:"none",
+                  cursor:"pointer",textDecoration:"underline"}}>다시 입력</button>
             </div>
           )}
+          {error&&<div style={{fontSize:11,color:"#ff7272",marginTop:8}}>{error}</div>}
         </div>
 
         {/* 저장번호 비교 */}
@@ -3279,6 +3399,7 @@ export default function App(){
   const[favorites,setFavorites]=useState([]);
   const[saved,setSaved]=useState([]);
   const[shareData,setShareData]=useState(null);
+  const[wishData,setWishData]=useState(null); // {nums, mode}
   const[onboardStep,setOnboardStep]=useState(0);
   const[cd,setCD]=useState(()=>getLottoCD());
   const[cdBlink,setCdBlink]=useState(false);
@@ -3312,11 +3433,15 @@ export default function App(){
   const saveProfile=async(p)=>{setProfile(p);try{localStorage.setItem("v2_profile",JSON.stringify(p));}catch(e){}setScreen("home");};
   const saveFavorites=async(f)=>{setFavorites(f);try{localStorage.setItem("v2_fav",JSON.stringify(f));}catch(e){}};
   const saveNums=async(nums,mode,wishId=null)=>{
+    if(!wishId){
+      // wishId 없으면 WishPopup 먼저 띄우기
+      setWishData({nums,mode});
+      return;
+    }
     const wish=wishId?DREAM_WISHES.find(w=>w.id===wishId):null;
     const e={nums,mode,date:todayStr(),wish:wish?{em:wish.em,label:wish.label,msg:wish.msg}:null};
     const nx=[e,...saved].slice(0,30);
     setSaved(nx);try{localStorage.setItem("v2_saved",JSON.stringify(nx));}catch(e){}
-    if(!wishId)alert("번호함에 저장됐습니다! 💾");
   };
   const handleShare=(nums,mode)=>setShareData({nums,mode});
   const goHome=()=>setScreen("home");
@@ -3476,6 +3601,15 @@ export default function App(){
   if(SCREENS[screen])return(
     <div style={W}>
       <ShareModal data={shareData} onClose={()=>setShareData(null)}/>
+      {wishData&&<WishPopup
+        onSelect={(wishId)=>{
+          const wish=DREAM_WISHES.find(w=>w.id===wishId);
+          const e={nums:wishData.nums,mode:wishData.mode,date:todayStr(),
+            wish:wish?{em:wish.em,label:wish.label,msg:wish.msg}:null};
+          const nx=[e,...saved].slice(0,30);
+          setSaved(nx);try{localStorage.setItem("v2_saved",JSON.stringify(nx));}catch(err){}
+        }}
+        onClose={()=>setWishData(null)}/>}
       {SCREENS[screen]}
     </div>
   );
