@@ -1146,29 +1146,31 @@ function LocationScreen({onSave,onShare,onBack}){
     setGlobeOpacity(0);
     setTimeout(()=>{
       setPhase("locating");
-      const KAKAO_KEY="17331fc0842da83b7f13ec82795cb4de";
       const fetchStores=async(lat,lng,err=false)=>{
         setMyLoc({lat,lng});setLocErr(err);
         // 명당 데이터 (하드코딩)
         const sorted=[...LOTTO_STORES].map(s=>({...s,dist:locDist(lat,lng,s.lat,s.lng)})).sort((a,b)=>a.dist-b.dist).slice(0,6);
         setNearStores(sorted);
-        // 카카오 API - 주변 판매점
+        // 카카오 Places SDK - 주변 판매점
         try{
-          const res=await fetch(
-            `https://dapi.kakao.com/v2/local/search/keyword.json?query=로또판매점&x=${lng}&y=${lat}&radius=5000&sort=distance&size=6`,
-            {headers:{"Authorization":`KakaoAK ${KAKAO_KEY}`}}
-          );
-          const data=await res.json();
-          if(data.documents&&data.documents.length>0){
-            const stores=data.documents.map(d=>({
-              name:d.place_name,
-              addr:d.road_address_name||d.address_name,
-              lat:parseFloat(d.y),
-              lng:parseFloat(d.x),
-              dist:parseFloat(d.distance)/1000,
-              wins:null,
-            }));
-            setKakaoStores(stores);
+          if(window.kakao&&window.kakao.maps&&window.kakao.maps.services){
+            const ps=new window.kakao.maps.services.Places();
+            ps.keywordSearch("로또판매점",(result,status)=>{
+              if(status===window.kakao.maps.services.Status.OK){
+                const stores=result.slice(0,6).map(d=>({
+                  name:d.place_name,
+                  addr:d.road_address_name||d.address_name,
+                  lat:parseFloat(d.y),
+                  lng:parseFloat(d.x),
+                  dist:parseFloat(d.distance)/1000,
+                  wins:null,
+                }));
+                setKakaoStores(stores);
+              }
+            },{
+              location:new window.kakao.maps.LatLng(lat,lng),
+              radius:5000,sort:window.kakao.maps.services.SortBy.DISTANCE,size:6
+            });
           }
         }catch(e){}
         setPhase("map");
