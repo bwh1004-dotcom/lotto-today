@@ -2727,8 +2727,6 @@ function ApartmentScreen({onSave,onShare,onBack}){
         </button>
       )}
     </div>
-      )}
-    </div>
     <style>{`
       @keyframes twinkle{0%,100%{opacity:1}50%{opacity:0.2}}
       @keyframes sparkOut{0%{transform:translate(-50%,-50%) scale(1.2);opacity:1;}100%{opacity:0;}}
