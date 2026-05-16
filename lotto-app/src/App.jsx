@@ -770,23 +770,23 @@ function DreamScreen({onSave,onShare,onBack}){
       <div style={{background:"rgba(180,74,255,0.04)",border:"1px solid rgba(180,74,255,0.1)",
         borderRadius:12,padding:"12px 14px",marginBottom:12}}>
         <div style={{fontSize:11,color:"#886699",marginBottom:10,fontWeight:700}}>🌙 수면 시간 (선택)</div>
-        <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:8}}>
-          <div style={{flex:1}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:8,alignItems:"end",marginBottom:8}}>
+          <div>
             <div style={{fontSize:10,color:"#555",marginBottom:4}}>취침</div>
             <input type="time" value={sleepTime} onChange={e=>setSleepTime(e.target.value)}
               style={{width:"100%",background:"rgba(255,255,255,0.05)",
                 border:`1px solid ${sleepTime?"rgba(180,74,255,0.4)":"rgba(255,255,255,0.08)"}`,
-                borderRadius:8,padding:"8px 10px",color:"#fff",fontSize:14,
-                fontWeight:700,outline:"none",boxSizing:"border-box"}}/>
+                borderRadius:8,padding:"10px",color:"#fff",fontSize:14,
+                fontWeight:700,outline:"none",boxSizing:"border-box",textAlign:"center"}}/>
           </div>
-          <div style={{color:"#444",fontSize:18,paddingTop:18}}>→</div>
-          <div style={{flex:1}}>
+          <div style={{color:"#444",fontSize:16,paddingBottom:2,textAlign:"center"}}>→</div>
+          <div>
             <div style={{fontSize:10,color:"#555",marginBottom:4}}>기상</div>
             <input type="time" value={wakeTime} onChange={e=>setWakeTime(e.target.value)}
               style={{width:"100%",background:"rgba(255,255,255,0.05)",
                 border:`1px solid ${wakeTime?"rgba(180,74,255,0.4)":"rgba(255,255,255,0.08)"}`,
-                borderRadius:8,padding:"8px 10px",color:"#fff",fontSize:14,
-                fontWeight:700,outline:"none",boxSizing:"border-box"}}/>
+                borderRadius:8,padding:"10px",color:"#fff",fontSize:14,
+                fontWeight:700,outline:"none",boxSizing:"border-box",textAlign:"center"}}/>
           </div>
         </div>
         {sleepTime&&wakeTime&&(()=>{
