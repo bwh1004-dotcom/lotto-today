@@ -1,0 +1,8 @@
+{
+  "appId": "com.unodeya.lottoapp",
+  "appName": "오늘의 행운",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": true
+  }
+}

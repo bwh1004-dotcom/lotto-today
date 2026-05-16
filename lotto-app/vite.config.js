@@ -3,5 +3,5 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/lotto-today/',
+  base: process.env.CAPACITOR_BUILD ? './' : '/lotto-today/',
 })
