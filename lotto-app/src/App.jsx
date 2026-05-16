@@ -1085,6 +1085,8 @@ function LocationScreen({onSave,onShare,onBack}){
   const[phase,setPhase]=useState("globe");
   const[myLoc,setMyLoc]=useState(null);
   const[nearStores,setNearStores]=useState([]);
+  const[kakaoStores,setKakaoStores]=useState([]);
+  const[storeTab,setStoreTab]=useState("famous"); // famous | nearby
   const[selected,setSelected]=useState(null);
   const[nums,setNums]=useState([]);
   const[coordInfo,setCoordInfo]=useState(null);
@@ -1147,6 +1149,10 @@ function LocationScreen({onSave,onShare,onBack}){
       const KAKAO_KEY="17331fc0842da83b7f13ec82795cb4de";
       const fetchStores=async(lat,lng,err=false)=>{
         setMyLoc({lat,lng});setLocErr(err);
+        // 명당 데이터 (하드코딩)
+        const sorted=[...LOTTO_STORES].map(s=>({...s,dist:locDist(lat,lng,s.lat,s.lng)})).sort((a,b)=>a.dist-b.dist).slice(0,6);
+        setNearStores(sorted);
+        // 카카오 API - 주변 판매점
         try{
           const res=await fetch(
             `https://dapi.kakao.com/v2/local/search/keyword.json?query=로또판매점&x=${lng}&y=${lat}&radius=5000&sort=distance&size=6`,
@@ -1160,18 +1166,11 @@ function LocationScreen({onSave,onShare,onBack}){
               lat:parseFloat(d.y),
               lng:parseFloat(d.x),
               dist:parseFloat(d.distance)/1000,
-              wins:0,
+              wins:null,
             }));
-            setNearStores(stores);
-          } else {
-            // API 결과 없으면 하드코딩 데이터 fallback
-            const sorted=[...LOTTO_STORES].map(s=>({...s,dist:locDist(lat,lng,s.lat,s.lng)})).sort((a,b)=>a.dist-b.dist).slice(0,6);
-            setNearStores(sorted);
+            setKakaoStores(stores);
           }
-        }catch(e){
-          const sorted=[...LOTTO_STORES].map(s=>({...s,dist:locDist(lat,lng,s.lat,s.lng)})).sort((a,b)=>a.dist-b.dist).slice(0,6);
-          setNearStores(sorted);
-        }
+        }catch(e){}
         setPhase("map");
       };
       if(navigator.geolocation){
@@ -1394,33 +1393,79 @@ function LocationScreen({onSave,onShare,onBack}){
             지도에서 명당을 탭하거나 아래 목록에서 선택하세요
           </div>
           <MiniMap/>
+
+          {/* 탭 */}
+          <div style={{display:"flex",gap:6,marginBottom:10}}>
+            {[["famous","🏆 명당"],["nearby","📍 주변판매점"]].map(([t,label])=>(
+              <button key={t} onClick={()=>{setStoreTab(t);setSelected(null);}} style={{
+                flex:1,padding:"8px",borderRadius:10,border:"none",cursor:"pointer",
+                background:storeTab===t?"linear-gradient(135deg,#c8a800,#f9d71c)":"rgba(255,255,255,0.04)",
+                color:storeTab===t?"#000":"#555",fontSize:12,fontWeight:900}}>
+                {label}
+              </button>
+            ))}
+          </div>
+
           {selected&&(
             <div style={{background:"rgba(249,215,28,0.07)",border:"1px solid rgba(249,215,28,0.2)",
               borderRadius:14,padding:"12px 14px",marginBottom:12}}>
               <div style={{fontSize:14,fontWeight:900,color:"#f9d71c",marginBottom:4}}>🏆 {selected.name}</div>
-              <div style={{fontSize:10,color:"#555",marginBottom:10}}>{selected.addr} · 1등 {selected.wins}회</div>
+              <div style={{fontSize:10,color:"#555",marginBottom:10}}>
+                {selected.addr} {selected.wins!=null?`· 1등 ${selected.wins}회`:""}
+              </div>
             </div>
           )}
-          <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
-            {nearStores.map(s=>{
-              const isSel=selected?.id===s.id;
-              return(
-                <button key={s.id} onClick={()=>setSelected(s)} style={{
-                  display:"flex",alignItems:"center",gap:10,
-                  background:isSel?"rgba(249,215,28,0.07)":"rgba(255,255,255,0.02)",
-                  border:`1px solid ${isSel?"rgba(249,215,28,0.3)":"rgba(255,255,255,0.06)"}`,
-                  borderRadius:10,padding:"10px 12px",cursor:"pointer",textAlign:"left"}}>
-                  <div style={{fontSize:11,fontWeight:900,color:isSel?"#f9d71c":"rgba(105,200,242,0.4)",minWidth:16}}>{nearStores.indexOf(s)+1}</div>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:12,fontWeight:700,color:isSel?"#f9d71c":"#888"}}>{s.name}</div>
-                    <div style={{fontSize:10,color:"#555"}}>{s.addr}</div>
-                  </div>
-                  <div style={{fontSize:11,color:"#ff9800",fontWeight:700}}>{s.wins}회</div>
-                  <div style={{fontSize:11,color:"#555"}}>{fmtDist(locDist(myLoc.lat,myLoc.lng,s.lat,s.lng))}</div>
-                </button>
-              );
-            })}
-          </div>
+
+          {/* 명당 탭 */}
+          {storeTab==="famous"&&(
+            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+              {nearStores.map(s=>{
+                const isSel=selected?.id===s.id;
+                return(
+                  <button key={s.id} onClick={()=>setSelected(s)} style={{
+                    display:"flex",alignItems:"center",gap:10,
+                    background:isSel?"rgba(249,215,28,0.07)":"rgba(255,255,255,0.02)",
+                    border:`1px solid ${isSel?"rgba(249,215,28,0.3)":"rgba(255,255,255,0.06)"}`,
+                    borderRadius:10,padding:"10px 12px",cursor:"pointer",textAlign:"left"}}>
+                    <div style={{fontSize:11,fontWeight:900,color:isSel?"#f9d71c":"rgba(105,200,242,0.4)",minWidth:16}}>{nearStores.indexOf(s)+1}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:12,fontWeight:700,color:isSel?"#f9d71c":"#888"}}>{s.name}</div>
+                      <div style={{fontSize:10,color:"#555"}}>{s.addr}</div>
+                    </div>
+                    <div style={{fontSize:11,color:"#ff9800",fontWeight:700}}>{s.wins}회</div>
+                    <div style={{fontSize:11,color:"#555"}}>{fmtDist(locDist(myLoc.lat,myLoc.lng,s.lat,s.lng))}</div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* 주변판매점 탭 */}
+          {storeTab==="nearby"&&(
+            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+              {kakaoStores.length===0?(
+                <div style={{textAlign:"center",padding:"20px",color:"#444",fontSize:12}}>
+                  📍 주변 판매점을 불러오는 중이에요
+                </div>
+              ):kakaoStores.map((s,i)=>{
+                const isSel=selected?.name===s.name;
+                return(
+                  <button key={i} onClick={()=>setSelected({...s,id:`kakao_${i}`})} style={{
+                    display:"flex",alignItems:"center",gap:10,
+                    background:isSel?"rgba(249,215,28,0.07)":"rgba(255,255,255,0.02)",
+                    border:`1px solid ${isSel?"rgba(249,215,28,0.3)":"rgba(255,255,255,0.06)"}`,
+                    borderRadius:10,padding:"10px 12px",cursor:"pointer",textAlign:"left"}}>
+                    <div style={{fontSize:11,fontWeight:900,color:isSel?"#f9d71c":"rgba(105,200,242,0.4)",minWidth:16}}>{i+1}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:12,fontWeight:700,color:isSel?"#f9d71c":"#888"}}>{s.name}</div>
+                      <div style={{fontSize:10,color:"#555"}}>{s.addr}</div>
+                    </div>
+                    <div style={{fontSize:11,color:"#555"}}>{s.dist.toFixed(1)}km</div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {showClover&&<CloverPopup onDone={()=>{setShowClover(false);generate();}}/>}
           <button onClick={()=>selected&&setShowClover(true)} disabled={!selected} style={{
             width:"100%",padding:"15px",borderRadius:14,border:"none",
