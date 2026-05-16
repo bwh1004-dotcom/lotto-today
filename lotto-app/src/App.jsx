@@ -519,7 +519,7 @@ function TodayScreen({profile,onSave,onShare,onBack}){
         <div style={{fontSize:12,fontWeight:700,color:"#aaa",marginBottom:10}}>오늘 더 기록할게요</div>
         <div style={{marginBottom:12}}>
           <div style={{fontSize:11,color:"#666",marginBottom:5}}>👟 오늘 걸음수 (선택)</div>
-          <input value={steps} onChange={e=>setSteps(e.target.value.replace(/\D/g,""))} placeholder="예: 8500"
+          <input type="tel" inputMode="numeric" value={steps} onChange={e=>setSteps(e.target.value.replace(/\D/g,""))} placeholder="예: 8500"
             style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",
               borderRadius:8,padding:"10px 12px",color:"#fff",fontSize:14,boxSizing:"border-box",outline:"none"}}/>
         </div>
@@ -775,7 +775,7 @@ function DreamScreen({onSave,onShare,onBack}){
       <div style={{background:"rgba(180,74,255,0.04)",border:"1px solid rgba(180,74,255,0.1)",
         borderRadius:12,padding:"12px 14px",marginBottom:12}}>
         <div style={{fontSize:11,color:"#886699",marginBottom:10,fontWeight:700}}>🌙 수면 시간 (선택)</div>
-        <div style={{display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:8}}>
           <div style={{flex:1}}>
             <div style={{fontSize:10,color:"#555",marginBottom:4}}>취침</div>
             <input type="time" value={sleepTime} onChange={e=>setSleepTime(e.target.value)}
@@ -784,7 +784,7 @@ function DreamScreen({onSave,onShare,onBack}){
                 borderRadius:8,padding:"8px 10px",color:"#fff",fontSize:14,
                 fontWeight:700,outline:"none",boxSizing:"border-box"}}/>
           </div>
-          <div style={{color:"#444",fontSize:18,marginTop:14}}>→</div>
+          <div style={{color:"#444",fontSize:18,paddingTop:18}}>→</div>
           <div style={{flex:1}}>
             <div style={{fontSize:10,color:"#555",marginBottom:4}}>기상</div>
             <input type="time" value={wakeTime} onChange={e=>setWakeTime(e.target.value)}
@@ -793,20 +793,21 @@ function DreamScreen({onSave,onShare,onBack}){
                 borderRadius:8,padding:"8px 10px",color:"#fff",fontSize:14,
                 fontWeight:700,outline:"none",boxSizing:"border-box"}}/>
           </div>
-          {sleepTime&&wakeTime&&(()=>{
-            const s=sleepTime.split(":").map(Number);
-            const w=wakeTime.split(":").map(Number);
-            let diff=(w[0]*60+w[1])-(s[0]*60+s[1]);
-            if(diff<0)diff+=1440;
-            const h=Math.floor(diff/60),m=diff%60;
-            return(
-              <div style={{textAlign:"center",minWidth:52,marginTop:14}}>
-                <div style={{fontSize:9,color:"#555"}}>수면</div>
-                <div style={{fontSize:13,fontWeight:900,color:"#b44aff"}}>{h}h{m>0?`${m}m`:""}</div>
-              </div>
-            );
-          })()}
         </div>
+        {sleepTime&&wakeTime&&(()=>{
+          const s=sleepTime.split(":").map(Number);
+          const w=wakeTime.split(":").map(Number);
+          let diff=(w[0]*60+w[1])-(s[0]*60+s[1]);
+          if(diff<=0)diff+=1440; // 자정 넘긴 경우 + 같은 시간 방지
+          const h=Math.floor(diff/60),m=diff%60;
+          return(
+            <div style={{textAlign:"center",padding:"6px 0 2px",
+              borderTop:"1px solid rgba(180,74,255,0.1)"}}>
+              <span style={{fontSize:10,color:"#555"}}>수면 시간 </span>
+              <span style={{fontSize:14,fontWeight:900,color:"#b44aff"}}>{h}시간{m>0?` ${m}분`:""}</span>
+            </div>
+          );
+        })()}
       </div>
       {!cat&&(
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
@@ -830,7 +831,7 @@ function DreamScreen({onSave,onShare,onBack}){
       )}
       {cat&&(
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-          {Object.entries(TREE[cat]).map(([s,vals])=>{
+          {Object.entries(TREE[cat]).filter(([s])=>s!=="desc").map(([s,vals])=>{
             const isPoop=cat===POOP_CAT;
             return(<button key={s} onClick={()=>{SFX.tone(520,0.08,"sine",0.15);selectSub(s,vals);}} style={{
               padding:"16px 8px",borderRadius:12,cursor:"pointer",
@@ -995,7 +996,7 @@ function FortuneScreen({profile,onSave,onShare,onBack}){
 
       {flipped&&(
         <button onClick={reset} style={{
-          width:"100%",padding:"13px",borderRadius:14,border:"none",
+          width:"100%",padding:"13px",borderRadius:14,
           background:"rgba(180,150,255,0.1)",
           border:"1px solid rgba(180,150,255,0.2)",
           color:"#b0d8ff",fontSize:13,fontWeight:700,cursor:"pointer"}}>
@@ -1086,7 +1087,7 @@ function locPickNums(myLat,myLng,store){
 }
 
 function LocationScreen({onSave,onShare,onBack}){
-  const[phase,setPhase]=useState("globe"); // globe → zoomin → locating → map → result
+  const[phase,setPhase]=useState("globe");
   const[myLoc,setMyLoc]=useState(null);
   const[nearStores,setNearStores]=useState([]);
   const[selected,setSelected]=useState(null);
@@ -1095,6 +1096,7 @@ function LocationScreen({onSave,onShare,onBack}){
   const[locErr,setLocErr]=useState(false);
   const[petals,setPetals]=useState([]);
   const triggerPetals=()=>{setPetals(spawnPetals());setTimeout(()=>setPetals([]),5000);};
+  const[showClover,setShowClover]=useState(false);
 
   // 지구본 드래그
   const[globeRot,setGlobeRot]=useState(0);
@@ -1102,14 +1104,12 @@ function LocationScreen({onSave,onShare,onBack}){
   const[hint,setHint]=useState(true);
   const[zoomScale,setZoomScale]=useState(1);
   const[globeOpacity,setGlobeOpacity]=useState(1);
-  const[gridOpacity,setGridOpacity]=useState(0);
   const rotRef=useRef(0);
   const velRef=useRef(0);
   const lastX=useRef(0);
   const rafRef=useRef(null);
   const alive=useRef(true);
 
-  // 관성
   useEffect(()=>{
     alive.current=true;
     const inertia=()=>{
@@ -1142,43 +1142,27 @@ function LocationScreen({onSave,onShare,onBack}){
   };
   const onGlobeEnd=()=>setIsDragging(false);
 
-  // 확인 버튼 → 줌인 → GPS 감지
   const doConfirm=()=>{
     if(phase!=="globe")return;
-    setPhase("zoomin");
-    let start=null;const dur=1400;
-    const animate=(ts)=>{
-      if(!start)start=ts;
-      const t=Math.min((ts-start)/dur,1);
-      const ease=1-Math.pow(1-t,3);
-      setZoomScale(1+ease*10);
-      setGlobeOpacity(1-ease);
-      setGridOpacity(ease);
-      if(t<1)requestAnimationFrame(animate);
-      else{
-        setPhase("locating");
-        // GPS 감지
-        const init=(lat,lng,err=false)=>{
-          if(!alive.current)return;
-          setMyLoc({lat,lng});setLocErr(err);
-          const sorted=[...LOTTO_STORES].map(s=>({...s,dist:locDist(lat,lng,s.lat,s.lng)})).sort((a,b)=>a.dist-b.dist).slice(0,6);
-          setNearStores(sorted);setPhase("map");
-        };
-        if(navigator.geolocation){
-          navigator.geolocation.getCurrentPosition(
-            p=>init(p.coords.latitude,p.coords.longitude),
-            ()=>init(37.5665,126.9780,true),{timeout:6000});
-        } else init(37.5665,126.9780,true);
-      }
-    };
-    requestAnimationFrame(animate);
+    // CSS transition으로 줌인 효과
+    setZoomScale(8);
+    setGlobeOpacity(0);
+    setTimeout(()=>{
+      setPhase("locating");
+      const init=(lat,lng,err=false)=>{
+        setMyLoc({lat,lng});setLocErr(err);
+        const sorted=[...LOTTO_STORES].map(s=>({...s,dist:locDist(lat,lng,s.lat,s.lng)})).sort((a,b)=>a.dist-b.dist).slice(0,6);
+        setNearStores(sorted);setPhase("map");
+      };
+      if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(
+          p=>init(p.coords.latitude,p.coords.longitude),
+          ()=>init(37.5665,126.9780,true),{timeout:6000});
+      } else init(37.5665,126.9780,true);
+    },800);
   };
 
-  // 지구본 렌더 함수들
   const GR=120,GCX=130,GCY=130;
-  const GLAND=[[127,35,22,16,"rgba(60,160,60,0.28)"],[15,48,14,10,"rgba(60,160,60,0.22)"],
-    [20,5,13,22,"rgba(60,160,60,0.22)"],[260,45,18,13,"rgba(60,160,60,0.22)"],
-    [300,10,12,18,"rgba(60,160,60,0.18)"],[134,25,11,8,"rgba(60,160,60,0.18)"]];
 
   const renderMeridians=()=>{
     const els=[];
@@ -1206,15 +1190,6 @@ function LocationScreen({onSave,onShare,onBack}){
     }
     return els;
   };
-  const renderLand=()=>GLAND.map(([lng,lat,rx,ry,color],i)=>{
-    const lonRad=((lng+globeRot)*Math.PI/180);
-    const latRad=(lat*Math.PI/180);
-    const cosLon=Math.cos(lonRad);
-    if(cosLon<0.05)return null;
-    const x=GCX+Math.sin(lonRad)*GR*0.9;
-    const y=GCY-Math.sin(latRad)*GR*0.9;
-    return(<ellipse key={i} cx={x} cy={y} rx={rx*cosLon} ry={ry*cosLon*0.55} fill={color} opacity={cosLon}/>);
-  });
   const renderPin=()=>{
     const lonRad=((127+globeRot)*Math.PI/180);
     const latRad=(37*Math.PI/180);
@@ -1240,10 +1215,8 @@ function LocationScreen({onSave,onShare,onBack}){
     setNums(locPickNums(myLoc.lat,myLoc.lng,selected));
     setPhase("result");SFX.chime();triggerPetals();
   };
-
   const reset=()=>{setSelected(null);setNums([]);setPhase("map");setCoordInfo(null);};
 
-  // SVG 미니맵
   const MiniMap=()=>{
     if(!myLoc||nearStores.length===0)return null;
     const lats=nearStores.map(s=>s.lat),lngs=nearStores.map(s=>s.lng);
@@ -1263,21 +1236,20 @@ function LocationScreen({onSave,onShare,onBack}){
             strokeWidth={isSel?1.5:0.8} strokeDasharray={isSel?"4,3":"2,4"}/>);
         })}
         {nearStores.map(s=>{
-          const isSel=selected?.id===s.id;const r=Math.max(6,Math.min(11,s.wins/5));
-          const x=toX(s.lng),y=toY(s.lat);
+          const isSel=selected?.id===s.id;
           return(<g key={s.id} onClick={()=>setSelected(s)} style={{cursor:"pointer"}}>
-            {isSel&&<circle cx={x} cy={y} r={r+5} fill="rgba(249,215,28,0.15)"/>}
-            <circle cx={x} cy={y} r={r} fill={isSel?"#f9d71c":"rgba(255,150,0,0.7)"}
-              stroke={isSel?"#fff":"rgba(255,255,255,0.2)"} strokeWidth={isSel?1.5:1}/>
-            <text x={x} y={y-r-3} textAnchor="middle" fontSize={7}
-              fill={isSel?"#f9d71c":"rgba(255,255,255,0.5)"} fontWeight={isSel?"bold":"normal"}>
-              {s.name.slice(0,4)}
+            <circle cx={toX(s.lng)} cy={toY(s.lat)} r={isSel?10:7}
+              fill={isSel?"rgba(249,215,28,0.25)":"rgba(105,200,242,0.12)"}
+              stroke={isSel?"#f9d71c":"rgba(105,200,242,0.4)"} strokeWidth="1.5"/>
+            <text x={toX(s.lng)} y={toY(s.lat)+1} textAnchor="middle" dominantBaseline="middle"
+              fontSize="8" fill={isSel?"#f9d71c":"rgba(255,255,255,0.6)"} fontWeight="bold">
+              {s.wins}
             </text>
           </g>);
         })}
-        <circle cx={myX} cy={myY} r={10} fill="rgba(105,200,242,0.2)" stroke="rgba(105,200,242,0.5)" strokeWidth={1}/>
-        <circle cx={myX} cy={myY} r={5} fill="#69c8f2"/>
-        <text x={myX} y={myY+16} textAnchor="middle" fontSize={7} fill="#69c8f2">나</text>
+        <circle cx={myX} cy={myY} r={6} fill="rgba(105,200,242,0.3)" stroke="#69c8f2" strokeWidth="1.5"/>
+        <circle cx={myX} cy={myY} r={3} fill="#69c8f2"/>
+        <text x={myX} y={myY+14} textAnchor="middle" fontSize="8" fill="#69c8f2">나</text>
       </svg>
     );
   };
@@ -1287,87 +1259,84 @@ function LocationScreen({onSave,onShare,onBack}){
     padding:"10px 14px 24px",boxSizing:"border-box",color:"#fff",
     position:"relative",overflow:"hidden"};
 
-  return(<div style={W}
-    onMouseMove={onGlobeMove} onMouseUp={onGlobeEnd} onMouseLeave={onGlobeEnd}
-    onTouchMove={onGlobeMove} onTouchEnd={onGlobeEnd}>
-    <PetalOverlay petals={petals}/>
-
-    {/* 별 (지구본 phase) */}
-    {(phase==="globe"||phase==="zoomin")&&Array.from({length:50},(_,i)=>(
-      <div key={i} style={{position:"fixed",
-        left:`${(i*37+11)%100}%`,top:`${(i*23+7)%100}%`,
-        width:i%7===0?2:1,height:i%7===0?2:1,borderRadius:"50%",
-        background:`rgba(255,255,255,${0.1+((i*7)%10)*0.05})`,
-        pointerEvents:"none",zIndex:0}}/>
-    ))}
-
-    {/* 지구본 phase */}
-    {(phase==="globe"||phase==="zoomin")&&(
-      <div style={{position:"fixed",inset:0,display:"flex",flexDirection:"column",
-        alignItems:"center",justifyContent:"center",zIndex:2,
-        opacity:globeOpacity,transform:`scale(${zoomScale})`,transformOrigin:"center center"}}>
-
-        <div style={{fontSize:12,color:"rgba(105,200,242,0.6)",marginBottom:16,
-          letterSpacing:3,fontWeight:700}}>📍 우리동네 명당</div>
-
-        <svg width={GCX*2} height={GCY*2}
-          onMouseDown={onGlobeStart} onTouchStart={onGlobeStart}
-          style={{cursor:isDragging?"grabbing":"grab",overflow:"visible"}}>
-          <defs>
-            <radialGradient id="gbg" cx="36%" cy="30%" r="70%">
-              <stop offset="0%" stopColor="#1e4a8c"/>
-              <stop offset="45%" stopColor="#0d2040"/>
-              <stop offset="100%" stopColor="#040d1a"/>
-            </radialGradient>
-            <radialGradient id="gshine" cx="30%" cy="25%" r="50%">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.1)"/>
-              <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
-            </radialGradient>
-            <radialGradient id="gshadow" cx="75%" cy="70%" r="40%">
-              <stop offset="0%" stopColor="rgba(0,0,20,0.6)"/>
-              <stop offset="100%" stopColor="rgba(0,0,0,0)"/>
-            </radialGradient>
-            <radialGradient id="grim" cx="50%" cy="50%" r="50%">
-              <stop offset="80%" stopColor="rgba(105,200,242,0)"/>
-              <stop offset="100%" stopColor="rgba(105,200,242,0.12)"/>
-            </radialGradient>
-            <clipPath id="gclip"><circle cx={GCX} cy={GCY} r={GR}/></clipPath>
-          </defs>
-          <circle cx={GCX} cy={GCY} r={GR+18} fill="url(#grim)"/>
-          <circle cx={GCX} cy={GCY} r={GR+8} fill="none" stroke="rgba(105,200,242,0.08)" strokeWidth="8"/>
-          <circle cx={GCX} cy={GCY} r={GR} fill="url(#gbg)"/>
-          <g clipPath="url(#gclip)">
-            {renderParallels()}{renderMeridians()}{renderLand()}{renderPin()}
-            <circle cx={GCX} cy={GCY} r={GR} fill="url(#gshadow)"/>
-            <circle cx={GCX} cy={GCY} r={GR} fill="url(#gshine)"/>
-          </g>
-          <circle cx={GCX} cy={GCY} r={GR} fill="none" stroke="rgba(105,200,242,0.2)" strokeWidth="1"/>
-        </svg>
-
-        {hint&&phase==="globe"&&(
-          <div style={{marginTop:14,display:"flex",alignItems:"center",gap:8,
-            color:"rgba(105,200,242,0.45)",fontSize:12}}>
-            <span style={{display:"inline-block",animation:"gswing 1.5s ease-in-out infinite"}}>👈</span>
-            <span>좌우로 돌려보세요</span>
-            <span style={{display:"inline-block",animation:"gswing 1.5s ease-in-out infinite reverse"}}>👉</span>
-          </div>
-        )}
-        {phase==="globe"&&(
-          <button onClick={doConfirm} style={{
-            marginTop:20,padding:"13px 32px",borderRadius:50,border:"none",
-            background:"linear-gradient(135deg,#0d4a7a,#1a7ac8)",
-            color:"#69c8f2",fontSize:14,fontWeight:900,cursor:"pointer",
-            boxShadow:"0 4px 24px rgba(105,200,242,0.25)",letterSpacing:1}}>
-            📍 이 위치로 확인
-          </button>
-        )}
+  // ── 지구본 화면
+  if(phase==="globe")return(
+    <div style={{...W,background:"#050409",justifyContent:"center"}}
+      onMouseMove={onGlobeMove} onMouseUp={onGlobeEnd} onMouseLeave={onGlobeEnd}
+      onTouchMove={onGlobeMove} onTouchEnd={onGlobeEnd}>
+      {Array.from({length:50},(_,i)=>(
+        <div key={i} style={{position:"fixed",
+          left:`${(i*37+11)%100}%`,top:`${(i*23+7)%100}%`,
+          width:i%7===0?2:1,height:i%7===0?2:1,borderRadius:"50%",
+          background:`rgba(255,255,255,${0.1+((i*7)%10)*0.05})`,
+          pointerEvents:"none"}}/>
+      ))}
+      <div style={{fontSize:12,color:"rgba(105,200,242,0.6)",marginBottom:16,letterSpacing:3,fontWeight:700,
+        opacity:globeOpacity,transition:"opacity 0.8s ease"}}>
+        📍 우리동네 명당
       </div>
-    )}
+      <svg width={GCX*2} height={GCY*2}
+        onMouseDown={onGlobeStart} onTouchStart={onGlobeStart}
+        style={{cursor:isDragging?"grabbing":"grab",overflow:"visible",
+          transform:`scale(${zoomScale})`,opacity:globeOpacity,
+          transition:"transform 0.8s ease, opacity 0.8s ease"}}>
+        <defs>
+          <radialGradient id="gbg" cx="36%" cy="30%" r="70%">
+            <stop offset="0%" stopColor="#1e4a8c"/>
+            <stop offset="45%" stopColor="#0d2040"/>
+            <stop offset="100%" stopColor="#040d1a"/>
+          </radialGradient>
+          <radialGradient id="gshine" cx="30%" cy="25%" r="50%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.1)"/>
+            <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
+          </radialGradient>
+          <radialGradient id="gshadow" cx="75%" cy="70%" r="40%">
+            <stop offset="0%" stopColor="rgba(0,0,20,0.6)"/>
+            <stop offset="100%" stopColor="rgba(0,0,0,0)"/>
+          </radialGradient>
+          <radialGradient id="grim" cx="50%" cy="50%" r="50%">
+            <stop offset="80%" stopColor="rgba(105,200,242,0)"/>
+            <stop offset="100%" stopColor="rgba(105,200,242,0.12)"/>
+          </radialGradient>
+          <clipPath id="gclip"><circle cx={GCX} cy={GCY} r={GR}/></clipPath>
+        </defs>
+        <circle cx={GCX} cy={GCY} r={GR+18} fill="url(#grim)"/>
+        <circle cx={GCX} cy={GCY} r={GR+8} fill="none" stroke="rgba(105,200,242,0.08)" strokeWidth="8"/>
+        <circle cx={GCX} cy={GCY} r={GR} fill="url(#gbg)"/>
+        <g clipPath="url(#gclip)">
+          {renderParallels()}{renderMeridians()}{renderPin()}
+          <circle cx={GCX} cy={GCY} r={GR} fill="url(#gshadow)"/>
+          <circle cx={GCX} cy={GCY} r={GR} fill="url(#gshine)"/>
+        </g>
+        <circle cx={GCX} cy={GCY} r={GR} fill="none" stroke="rgba(105,200,242,0.2)" strokeWidth="1"/>
+      </svg>
+      {hint&&(
+        <div style={{marginTop:14,display:"flex",alignItems:"center",gap:8,
+          color:"rgba(105,200,242,0.45)",fontSize:12}}>
+          <span style={{display:"inline-block",animation:"gswing 1.5s ease-in-out infinite"}}>👈</span>
+          <span>좌우로 돌려보세요</span>
+          <span style={{display:"inline-block",animation:"gswing 1.5s ease-in-out infinite reverse"}}>👉</span>
+        </div>
+      )}
+      <button onClick={doConfirm} style={{
+        marginTop:20,padding:"13px 32px",borderRadius:50,border:"none",
+        background:"linear-gradient(135deg,#0d4a7a,#1a7ac8)",
+        color:"#69c8f2",fontSize:14,fontWeight:900,cursor:"pointer",
+        boxShadow:"0 4px 24px rgba(105,200,242,0.25)",letterSpacing:1}}>
+        📍 이 위치로 확인
+      </button>
+      <style>{`@keyframes gswing{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}`}</style>
+    </div>
+  );
 
-    {/* 격자 좌표선 배경 */}
-    <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,
-      opacity:phase==="globe"||phase==="zoomin"?gridOpacity:1,transition:"opacity 0.5s"}}>
-      <svg width="100%" height="100%" style={{position:"absolute",inset:0}} xmlns="http://www.w3.org/2000/svg">
+  // ── locating/map/result 화면
+  return(<div style={W}>
+    <PetalOverlay petals={petals}/>
+    {showClover&&<CloverPopup onDone={()=>{setShowClover(false);generate();}}/>}
+
+    {/* 격자 배경 */}
+    <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0}}>
+      <svg width="100%" height="100%" style={{position:"absolute",inset:0}}>
         <defs>
           <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
             <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(105,200,242,0.07)" strokeWidth="0.8"/>
@@ -1378,80 +1347,58 @@ function LocationScreen({onSave,onShare,onBack}){
         </defs>
         <rect width="100%" height="100%" fill="url(#grid)"/>
         <rect width="100%" height="100%" fill="url(#gridLarge)"/>
-        {[0,25,50,75,100].map((y,i)=>(
-          <text key={i} x="4" y={`${y}%`} fontSize="7" fill="rgba(105,200,242,0.2)" fontFamily="monospace">
-            {(35.5-(i*0.3)).toFixed(1)}°N
-          </text>
-        ))}
-        {[10,30,50,70,90].map((x,i)=>(
-          <text key={i} x={`${x}%`} y="99%" fontSize="7" fill="rgba(105,200,242,0.2)" fontFamily="monospace">
-            {(126.5+(i*0.3)).toFixed(1)}°E
-          </text>
-        ))}
       </svg>
     </div>
 
-    {/* 헤더 (map/result/locating phase) */}
-    {phase!=="globe"&&phase!=="zoomin"&&(
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",maxWidth:400,marginBottom:12,position:"relative",zIndex:1}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+      width:"100%",maxWidth:400,marginBottom:12,position:"relative",zIndex:1}}>
       <button onClick={onBack} style={{background:"none",border:"none",color:"#666",fontSize:13,cursor:"pointer"}}>← 홈</button>
       <span style={{fontSize:13,fontWeight:900,color:"#f9d71c"}}>📍 우리동네 명당</span>
       <div style={{width:40}}/>
     </div>
-    )}
 
     <div style={{width:"100%",maxWidth:400,position:"relative",zIndex:1}}>
       {phase==="locating"&&(
         <div style={{textAlign:"center",padding:"60px 0"}}>
-          <div style={{fontSize:40,marginBottom:12}}>📍</div>
+          <div style={{fontSize:40,marginBottom:12,animation:"pulse 1s ease-in-out infinite"}}>📍</div>
           <div style={{fontSize:13,color:"#555"}}>내 위치 확인 중...</div>
         </div>
       )}
 
       {phase==="map"&&myLoc&&(
         <div>
-          {locErr&&<div style={{fontSize:10,color:"#555",textAlign:"center",marginBottom:8,padding:"6px",background:"rgba(255,255,255,0.03)",borderRadius:8}}>
-            📍 GPS 사용 불가 · 광주 기준으로 표시해요</div>}
+          {locErr&&<div style={{fontSize:10,color:"#555",textAlign:"center",marginBottom:8,
+            padding:"6px",background:"rgba(255,255,255,0.03)",borderRadius:8}}>
+            📍 GPS 사용 불가 · 서울 기준으로 표시해요</div>}
           <div style={{fontSize:11,color:"#555",textAlign:"center",marginBottom:10}}>
             지도에서 명당을 탭하거나 아래 목록에서 선택하세요
           </div>
           <MiniMap/>
           {selected&&(
-            <div style={{background:"rgba(249,215,28,0.07)",border:"1px solid rgba(249,215,28,0.2)",borderRadius:14,padding:"12px 14px",marginBottom:12}}>
+            <div style={{background:"rgba(249,215,28,0.07)",border:"1px solid rgba(249,215,28,0.2)",
+              borderRadius:14,padding:"12px 14px",marginBottom:12}}>
               <div style={{fontSize:14,fontWeight:900,color:"#f9d71c",marginBottom:4}}>🏆 {selected.name}</div>
               <div style={{fontSize:10,color:"#555",marginBottom:10}}>{selected.addr} · 1등 {selected.wins}회</div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-                {[
-                  ["📍 거리",fmtDist(locDist(myLoc.lat,myLoc.lng,selected.lat,selected.lng))],
-                  ["🧭 방향",dirLabel(locAngle(myLoc.lat,myLoc.lng,selected.lat,selected.lng))],
-                  ["↕️ 위도차",`${Math.abs(selected.lat-myLoc.lat).toFixed(4)}°`],
-                  ["↔️ 경도차",`${Math.abs(selected.lng-myLoc.lng).toFixed(4)}°`],
-                ].map(([k,v])=>(
-                  <div key={k} style={{background:"rgba(255,255,255,0.03)",borderRadius:8,padding:"6px 10px"}}>
-                    <div style={{fontSize:9,color:"#555",marginBottom:1}}>{k}</div>
-                    <div style={{fontSize:12,fontWeight:900,color:"#f9d71c"}}>{v}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{fontSize:9,color:"#443300",textAlign:"center",marginTop:8}}>위 좌표값이 번호로 변환돼요</div>
             </div>
           )}
           <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
-            {nearStores.map((s,i)=>{
+            {nearStores.map(s=>{
               const isSel=selected?.id===s.id;
-              return(<button key={s.id} onClick={()=>setSelected(s)} style={{
-                display:"flex",alignItems:"center",gap:10,
-                background:isSel?"rgba(249,215,28,0.08)":"rgba(255,255,255,0.02)",
-                border:`1px solid ${isSel?"rgba(249,215,28,0.3)":"rgba(255,255,255,0.05)"}`,
-                borderRadius:10,padding:"8px 12px",cursor:"pointer",textAlign:"left",transition:"all .2s"}}>
-                <div style={{fontSize:11,color:isSel?"#f9d71c":"#444",fontWeight:700,minWidth:16}}>{i+1}</div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:12,fontWeight:700,color:isSel?"#f9d71c":"#888"}}>{s.name}</div>
-                  <div style={{fontSize:9,color:"#444"}}>{s.addr}</div>
-                </div>
-                <div style={{fontSize:10,color:"#ff9800",fontWeight:700}}>{s.wins}회</div>
-                <div style={{fontSize:10,color:"#333"}}>{fmtDist(s.dist)}</div>
-              </button>);
+              return(
+                <button key={s.id} onClick={()=>setSelected(s)} style={{
+                  display:"flex",alignItems:"center",gap:10,
+                  background:isSel?"rgba(249,215,28,0.07)":"rgba(255,255,255,0.02)",
+                  border:`1px solid ${isSel?"rgba(249,215,28,0.3)":"rgba(255,255,255,0.06)"}`,
+                  borderRadius:10,padding:"10px 12px",cursor:"pointer",textAlign:"left"}}>
+                  <div style={{fontSize:11,fontWeight:900,color:isSel?"#f9d71c":"rgba(105,200,242,0.4)",minWidth:16}}>{nearStores.indexOf(s)+1}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:12,fontWeight:700,color:isSel?"#f9d71c":"#888"}}>{s.name}</div>
+                    <div style={{fontSize:10,color:"#555"}}>{s.addr}</div>
+                  </div>
+                  <div style={{fontSize:11,color:"#ff9800",fontWeight:700}}>{s.wins}회</div>
+                  <div style={{fontSize:11,color:"#555"}}>{fmtDist(locDist(myLoc.lat,myLoc.lng,s.lat,s.lng))}</div>
+                </button>
+              );
             })}
           </div>
           {showClover&&<CloverPopup onDone={()=>{setShowClover(false);generate();}}/>}
@@ -1469,48 +1416,8 @@ function LocationScreen({onSave,onShare,onBack}){
       {phase==="result"&&selected&&(
         <div style={{textAlign:"center"}}>
           <div style={{fontSize:13,fontWeight:900,color:"#f9d71c",marginBottom:4}}>🏆 {selected.name}</div>
-          <div style={{fontSize:10,color:"#555",marginBottom:12}}>1등 {selected.wins}회 · {fmtDist(coordInfo?.dist||0)}</div>
-          {coordInfo&&(
-            <div style={{marginBottom:14}}>
-              <div style={{fontSize:10,color:"#555",textAlign:"center",marginBottom:8}}>
-                아래 숫자들이 그대로 번호가 됐어요
-              </div>
-              <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                {[
-                  ["📍 거리", fmtDist(coordInfo.dist),
-                    coordInfo.dist<1?Math.round(coordInfo.dist*100):Math.round(coordInfo.dist*10)],
-                  ["🧭 방향", dirLabel(coordInfo.angle),
-                    (Math.round(coordInfo.angle/45)%8)+1],
-                  ["↕️ 위도차", `${coordInfo.dLat.toFixed(3)}°`,
-                    Math.round(coordInfo.dLat*1000)],
-                  ["↔️ 경도차", `${coordInfo.dLng.toFixed(3)}°`,
-                    Math.round(coordInfo.dLng*1000)],
-                  ["🏆 1등", `${selected.wins}회`, selected.wins],
-                ].map(([k,v,n])=>{
-                  const valid=n<=0?45:n>45?n%45||45:n;
-                  const c=ballColor(valid);
-                  return(
-                    <div key={k} style={{background:"rgba(255,255,255,0.04)",borderRadius:10,
-                      padding:"6px 10px",textAlign:"center",minWidth:56}}>
-                      <div style={{fontSize:8,color:"#555",marginBottom:3}}>{k}</div>
-                      <div style={{fontSize:11,fontWeight:700,color:"#aaa",marginBottom:4}}>{v}</div>
-                      <div style={{width:26,height:26,borderRadius:"50%",margin:"0 auto",
-                        background:`radial-gradient(circle at 35% 35%,${c.bg}dd,${c.bg})`,
-                        display:"flex",alignItems:"center",justifyContent:"center",
-                        fontSize:10,fontWeight:900,color:c.text}}>
-                        {valid}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          <Balls nums={nums}/>
-          <NumLine nums={nums}/>
-          <div style={{fontSize:10,color:"#444",textAlign:"center",marginTop:8}}>
-            📍 {fmtDist(coordInfo?.dist||0)} · {dirLabel(coordInfo?.angle||0)} 방향 · 오늘 이 순간의 기운
-          </div>
+          <div style={{fontSize:10,color:"#555",marginBottom:12}}>{selected.addr} · 1등 {selected.wins}회</div>
+          <Balls nums={nums}/><NumLine nums={nums}/>
           <ActionBtns nums={nums} mode="📍 우리동네명당" onSave={onSave} onShare={onShare}/>
           <div style={{display:"flex",gap:8,marginTop:10,justifyContent:"center"}}>
             <button onClick={()=>{setNums(locPickNums(myLoc.lat,myLoc.lng,selected));}} style={{
@@ -1522,10 +1429,9 @@ function LocationScreen({onSave,onShare,onBack}){
         </div>
       )}
     </div>
-  <style>{`@keyframes gswing{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}`}</style>
+    <style>{`@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}`}</style>
   </div>);
 }
-
 
 
 function FormulaScreen({onSave,onShare,onBack}){
@@ -1563,6 +1469,7 @@ function FormulaScreen({onSave,onShare,onBack}){
   const[sel,setSel]=useState([]);
   const[phone,setPhone]=useState("");
   const[nums,setNums]=useState([]);
+  const[showClover,setShowClover]=useState(false);
   const[petals,setPetals]=useState([]);
   const triggerPetals=()=>{setPetals(spawnPetals());setTimeout(()=>setPetals([]),5000);};
   const[flames,setFlames]=useState(Array.from({length:5},()=>({h:Math.random()*10,flicker:Math.random()})));
@@ -1754,7 +1661,7 @@ function FormulaScreen({onSave,onShare,onBack}){
                 <div style={{fontSize:11,marginBottom:5,fontWeight:700,color:done?m.color:"#665544"}}>
                   {m.label}{done&&<span style={{marginLeft:6,fontSize:10,opacity:0.8}}>✓</span>}
                 </div>
-                <input value={dates[id]||""}
+                <input type="tel" inputMode="numeric" value={dates[id]||""}
                   onChange={e=>{
                     const v=e.target.value.replace(/\D/g,"");
                     let fmt=v;
@@ -1781,7 +1688,7 @@ function FormulaScreen({onSave,onShare,onBack}){
         <div style={{fontSize:11,color:"#886633",marginBottom:6,fontWeight:700}}>
           📱 전화번호 뒤 4자리 (선택)
         </div>
-        <input value={phone} onChange={e=>setPhone(e.target.value.replace(/\D/g,"").slice(0,4))}
+        <input type="tel" inputMode="numeric" value={phone} onChange={e=>setPhone(e.target.value.replace(/\D/g,"").slice(0,4))}
           placeholder="예: 5849" maxLength={4}
           style={{width:"100%",background:"rgba(255,255,255,0.04)",
             border:`1px solid ${phone.length===4?"#ff9800":"rgba(255,255,255,0.08)"}`,
@@ -1827,6 +1734,7 @@ function FavoritesScreen({favorites,onSaveFav,onSave,onShare,onBack}){
   const[extra,setExtra]=useState([]);
   const[nums,setNums]=useState([]);
   const[editMode,setEditMode]=useState(false);
+  const[showClover,setShowClover]=useState(false);
   const[tempLifetime,setTempLifetime]=useState([]);
   const allNums=Array.from({length:45},(_,i)=>i+1);
   const need=Math.max(0,6-lifetime.length);
@@ -2156,6 +2064,7 @@ const WHEEL_ZONES=[
 ];
 // 역대 당첨 빈도 TOP10 (LUCKY 구역용)
 const LUCKY_NUMS=[27,28,15,3,33,16,37,38,6,7];
+const TOTAL_SPINS=6;
 
 function WheelScreen({onSave,onShare,onBack}){
   const[angle,setAngle]=useState(0);
@@ -2468,6 +2377,83 @@ const DREAM_APTS={
     {name:"송도SK뷰",addr:"연수구",price:110000,floors:40,area:108},
     {name:"청라SK뷰",addr:"서구",price:90000,floors:38,area:102},
     {name:"검단자이",addr:"서구",price:75000,floors:35,area:98},
+  ],
+  "울산":[
+    {name:"문수로아이파크",addr:"남구",price:90000,floors:35,area:114},
+    {name:"울산SK뷰",addr:"중구",price:75000,floors:30,area:108},
+    {name:"울산롯데캐슬",addr:"남구",price:65000,floors:28,area:102},
+    {name:"문수힐스테이트",addr:"남구",price:60000,floors:25,area:98},
+    {name:"울산아이파크",addr:"북구",price:55000,floors:22,area:94},
+  ],
+  "세종":[
+    {name:"세종더샵레이크파크",addr:"한솔동",price:85000,floors:32,area:114},
+    {name:"세종힐스테이트",addr:"도담동",price:75000,floors:30,area:108},
+    {name:"세종SK뷰",addr:"보람동",price:65000,floors:28,area:102},
+    {name:"세종아이파크",addr:"고운동",price:60000,floors:25,area:98},
+    {name:"세종롯데캐슬",addr:"아름동",price:55000,floors:22,area:94},
+  ],
+  "경기":[
+    {name:"판교알파리움",addr:"성남 분당",price:250000,floors:45,area:130},
+    {name:"광교아이파크",addr:"수원 영통",price:180000,floors:40,area:114},
+    {name:"동탄SK뷰",addr:"화성 동탄",price:120000,floors:38,area:108},
+    {name:"과천푸르지오",addr:"과천시",price:200000,floors:35,area:114},
+    {name:"위례자이",addr:"성남 중원",price:150000,floors:33,area:102},
+  ],
+  "강원":[
+    {name:"강릉자이",addr:"강릉 교동",price:75000,floors:28,area:108},
+    {name:"춘천SK뷰",addr:"춘천 퇴계",price:65000,floors:25,area:102},
+    {name:"원주롯데캐슬",addr:"원주 무실",price:60000,floors:22,area:98},
+    {name:"강릉힐스테이트",addr:"강릉 포남",price:55000,floors:20,area:94},
+    {name:"춘천아이파크",addr:"춘천 석사",price:50000,floors:18,area:90},
+  ],
+  "충북":[
+    {name:"청주SK뷰",addr:"청주 흥덕",price:70000,floors:30,area:108},
+    {name:"청주힐스테이트",addr:"청주 서원",price:60000,floors:28,area:102},
+    {name:"청주아이파크",addr:"청주 청원",price:55000,floors:25,area:98},
+    {name:"충주롯데캐슬",addr:"충주 호암",price:45000,floors:20,area:94},
+    {name:"청주자이",addr:"청주 흥덕",price:65000,floors:28,area:102},
+  ],
+  "충남":[
+    {name:"천안아산역SK뷰",addr:"천안 불당",price:80000,floors:32,area:108},
+    {name:"천안힐스테이트",addr:"천안 서북",price:70000,floors:30,area:102},
+    {name:"아산롯데캐슬",addr:"아산 배방",price:65000,floors:28,area:98},
+    {name:"천안자이",addr:"천안 동남",price:60000,floors:25,area:94},
+    {name:"천안아이파크",addr:"천안 불당",price:55000,floors:22,area:90},
+  ],
+  "전북":[
+    {name:"전주에코시티더샵",addr:"전주 효자",price:75000,floors:30,area:114},
+    {name:"전주힐스테이트",addr:"전주 완산",price:65000,floors:28,area:108},
+    {name:"전주SK뷰",addr:"전주 덕진",price:60000,floors:25,area:102},
+    {name:"전주롯데캐슬",addr:"전주 효자",price:55000,floors:22,area:98},
+    {name:"전주아이파크",addr:"전주 덕진",price:50000,floors:20,area:94},
+  ],
+  "전남":[
+    {name:"여수웅천아이파크",addr:"여수 웅천",price:70000,floors:28,area:108},
+    {name:"순천SK뷰",addr:"순천 조례",price:60000,floors:25,area:102},
+    {name:"목포롯데캐슬",addr:"목포 옥암",price:50000,floors:22,area:98},
+    {name:"여수힐스테이트",addr:"여수 학동",price:55000,floors:20,area:94},
+    {name:"순천자이",addr:"순천 풍덕",price:58000,floors:24,area:100},
+  ],
+  "경북":[
+    {name:"구미SK뷰",addr:"구미 원평",price:65000,floors:28,area:108},
+    {name:"포항힐스테이트",addr:"포항 북구",price:60000,floors:25,area:102},
+    {name:"경주롯데캐슬",addr:"경주 황성",price:55000,floors:22,area:98},
+    {name:"구미자이",addr:"구미 형곡",price:60000,floors:26,area:102},
+    {name:"안동아이파크",addr:"안동 옥동",price:45000,floors:18,area:90},
+  ],
+  "경남":[
+    {name:"창원SK뷰",addr:"창원 성산",price:80000,floors:32,area:114},
+    {name:"김해롯데캐슬",addr:"김해 장유",price:70000,floors:30,area:108},
+    {name:"진주힐스테이트",addr:"진주 초전",price:65000,floors:28,area:102},
+    {name:"창원아이파크",addr:"창원 의창",price:75000,floors:30,area:108},
+    {name:"거제자이",addr:"거제 고현",price:55000,floors:22,area:94},
+  ],
+  "제주":[
+    {name:"제주아이파크",addr:"노형동",price:120000,floors:30,area:114},
+    {name:"제주힐스테이트",addr:"연동",price:100000,floors:28,area:108},
+    {name:"더샵제주",addr:"노형동",price:85000,floors:25,area:102},
+    {name:"제주롯데캐슬",addr:"이도동",price:75000,floors:22,area:98},
+    {name:"제주SK뷰",addr:"아라동",price:65000,floors:20,area:94},
   ],
 };
 
@@ -2849,18 +2835,19 @@ function VaultScreen({saved,onBack}){
         <div style={{...box({marginBottom:14,background:"rgba(249,215,28,0.05)",
           border:"1px solid rgba(249,215,28,0.15)"})}}>
           <div style={{fontSize:11,color:"#886600",marginBottom:10,fontWeight:700}}>🎰 회차 입력</div>
-          <div style={{display:"flex",gap:8,marginBottom:winNums?12:0}}>
-            <input value={drwNo} onChange={e=>setDrwNo(e.target.value.replace(/\D/g,""))}
+          <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:winNums?12:0}}>
+            <input type="tel" inputMode="numeric" value={drwNo} onChange={e=>setDrwNo(e.target.value.replace(/\D/g,""))}
               placeholder="예: 1222" maxLength={4}
-              style={{flex:1,background:"rgba(255,255,255,0.06)",
+              style={{width:"100%",background:"rgba(255,255,255,0.06)",
                 border:"1px solid rgba(249,215,28,0.2)",borderRadius:10,
-                padding:"10px 14px",color:"#fff",fontSize:16,fontWeight:700,outline:"none"}}/>
+                padding:"10px 14px",color:"#fff",fontSize:16,fontWeight:700,outline:"none",
+                boxSizing:"border-box"}}/>
             <button onClick={fetchWinNums} disabled={loading||!drwNo} style={{
-              padding:"10px 18px",borderRadius:10,border:"none",
+              width:"100%",padding:"11px",borderRadius:10,border:"none",
               background:drwNo?"linear-gradient(135deg,#c8a800,#f9d71c)":"rgba(255,255,255,0.05)",
               color:drwNo?"#000":"#444",fontSize:14,fontWeight:900,
-              cursor:drwNo?"pointer":"default",whiteSpace:"nowrap"}}>
-              {loading?"조회중":"조회"}
+              cursor:drwNo?"pointer":"default"}}>
+              {loading?"조회중...":"🎰 당첨번호 조회"}
             </button>
           </div>
           {error&&<div style={{fontSize:11,color:"#ff7272",marginTop:6}}>{error}</div>}
@@ -2961,6 +2948,186 @@ function VaultScreen({saved,onBack}){
           </div>
         )}
 
+        {/* 🏆 자랑하기 */}
+        {winNums&&(()=>{
+          // 이번 주 구입금액
+          const thisWeek=new Date();
+          const wk=`${thisWeek.getFullYear()}-W${Math.ceil(thisWeek.getDate()/7)}`;
+          const weekTotal=purchase.filter(p=>p.week===wk).reduce((s,p)=>s+p.amt,0);
+          // 당첨금 계산 (5등:5천, 4등:5만, 3등:150만 가정)
+          const prizes={1:2000000000,2:60000000,3:1500000,4:50000,5:5000,낙첨:0};
+          const totalPrize=saved.reduce((sum,s)=>{
+            const r=analyze(s.nums);
+            return sum+(prizes[r?.rank?.r]||0);
+          },0);
+          // 승패 판정
+          let verdict,vEmoji,vColor,vMsg;
+          if(weekTotal===0){verdict=null;}
+          else if(totalPrize>weekTotal){
+            verdict="승";vEmoji="🏆";vColor="#f9d71c";
+            vMsg=`${(totalPrize-weekTotal).toLocaleString()}원 수익!`;
+          } else if(totalPrize===weekTotal){
+            verdict="무";vEmoji="🤝";vColor="#69c8f2";
+            vMsg="본전! 아깝다~";
+          } else {
+            verdict="패";vEmoji="💸";vColor="#ff7272";
+            vMsg=`${(weekTotal-totalPrize).toLocaleString()}원 손실`;
+          }
+
+          return(
+            <div style={{...box({marginTop:8,background:"rgba(255,150,80,0.04)",border:"1px solid rgba(255,150,80,0.12)"})}}>
+              <div style={{fontSize:11,color:"#886633",marginBottom:12,fontWeight:700}}>
+                🏆 친구에게 자랑하기
+              </div>
+
+              {/* 승패 현황 */}
+              {verdict&&(
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
+                  background:`rgba(${vColor==="#f9d71c"?"249,215,28":vColor==="#ff7272"?"255,114,114":"105,200,242"},0.08)`,
+                  border:`1px solid ${vColor}33`,borderRadius:12,padding:"12px 14px",marginBottom:12}}>
+                  <div>
+                    <div style={{fontSize:10,color:"#555",marginBottom:3}}>이번 주 결과</div>
+                    <div style={{fontSize:12,color:"#666"}}>
+                      구입 {weekTotal.toLocaleString()}원 → 당첨 {totalPrize.toLocaleString()}원
+                    </div>
+                    <div style={{fontSize:11,color:vColor,fontWeight:700,marginTop:2}}>{vMsg}</div>
+                  </div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:32}}>{vEmoji}</div>
+                    <div style={{fontSize:16,fontWeight:900,color:vColor}}>{verdict}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* 친구 번호 비교 */}
+              {(()=>{
+                const[showFriend,setShowFriend]=useState(false);
+                const[fNums,setFNums]=useState(["","","","","",""]);
+                const[fDone,setFDone]=useState(false);
+                const[fResult,setFResult]=useState(null);
+                const[copied,setCopied]=useState(false);
+                const myBest=saved.reduce((best,s)=>{
+                  const r=analyze(s.nums);
+                  return(!best||r?.mc>best.mc)?{nums:s.nums,...r}:best;
+                },null);
+                const fRank=fDone?analyze(fResult):null;
+
+                const shareText=fDone&&myBest&&fRank?
+                  `🎰 ${drwNo}회 로또 결과\n나: ${myBest.mc}개 일치 (${myBest.rank?.r}) ${myBest.rank?.e}\n친구: ${fRank.mc}개 일치 (${fRank.rank?.r}) ${fRank.rank?.e}\n${(myBest.mc>=fRank.mc)?"나 더 맞혔는데? 😏":"다음엔 내가 이길게 😤"}\n#오늘의행운`:"";
+
+                return(<>
+                  {!showFriend?(
+                    <button onClick={()=>setShowFriend(true)} style={{
+                      width:"100%",padding:"11px",borderRadius:12,border:"none",
+                      background:"linear-gradient(135deg,#cc4400,#ff9860)",
+                      color:"#fff",fontSize:13,fontWeight:900,cursor:"pointer"}}>
+                      👤 친구 번호와 비교해서 자랑하기
+                    </button>
+                  ):(
+                    <div>
+                      {/* 내 최고 번호 */}
+                      {myBest&&(
+                        <div style={{marginBottom:10}}>
+                          <div style={{fontSize:10,color:"#555",marginBottom:6}}>🙋 내 최고 번호</div>
+                          <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:4}}>
+                            {myBest.nums.map((n,i)=>{
+                              const hit=myBest.matchNums?.includes(n);
+                              const c=ballColor(n);
+                              return(<div key={i} style={{width:30,height:30,borderRadius:"50%",
+                                background:hit?`radial-gradient(circle at 35% 35%,${c.bg}dd,${c.bg})`:"rgba(255,255,255,0.06)",
+                                display:"flex",alignItems:"center",justifyContent:"center",
+                                fontSize:10,fontWeight:900,color:hit?c.text:"#333",
+                                boxShadow:hit?`0 0 0 2px #50c878`:"none"}}>{n}</div>);
+                            })}
+                            <div style={{marginLeft:6,display:"flex",alignItems:"center",
+                              fontSize:13,fontWeight:900,color:myBest.rank?.c}}>
+                              {myBest.rank?.e} {myBest.rank?.r}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 친구 번호 입력 */}
+                      {!fDone?(
+                        <div>
+                          <div style={{fontSize:10,color:"#555",marginBottom:6}}>👤 친구 번호 입력</div>
+                          <div style={{display:"flex",gap:4,marginBottom:8,flexWrap:"wrap"}}>
+                            {fNums.map((v,i)=>(
+                              <input key={i} type="tel" inputMode="numeric" value={v}
+                                onChange={e=>{
+                                  const val=e.target.value.replace(/\D/g,"").slice(0,2);
+                                  const next=[...fNums];next[i]=val;setFNums(next);
+                                }}
+                                maxLength={2} placeholder={`${i+1}`}
+                                style={{width:36,height:36,borderRadius:"50%",textAlign:"center",
+                                  background:"rgba(255,255,255,0.05)",
+                                  border:`1px solid ${v?"rgba(255,150,80,0.5)":"rgba(255,255,255,0.08)"}`,
+                                  color:"#fff",fontSize:12,fontWeight:900,outline:"none"}}/>
+                            ))}
+                          </div>
+                          <button onClick={()=>{
+                            const nums=fNums.map(Number).filter(n=>n>=1&&n<=45);
+                            const unique=[...new Set(nums)];
+                            if(unique.length===6){setFResult(unique);setFDone(true);}
+                          }} style={{width:"100%",padding:"10px",borderRadius:10,border:"none",
+                            background:"linear-gradient(135deg,#c8a800,#f9d71c)",
+                            color:"#000",fontSize:13,fontWeight:900,cursor:"pointer"}}>
+                            비교하기 →
+                          </button>
+                        </div>
+                      ):(
+                        <div>
+                          {/* 결과 */}
+                          <div style={{display:"flex",gap:8,marginBottom:10}}>
+                            <div style={{flex:1,background:"rgba(105,200,242,0.06)",borderRadius:12,padding:"10px",textAlign:"center"}}>
+                              <div style={{fontSize:10,color:"#555",marginBottom:4}}>🙋 나</div>
+                              <div style={{fontSize:20}}>{myBest?.rank?.e}</div>
+                              <div style={{fontSize:13,fontWeight:900,color:myBest?.rank?.c}}>{myBest?.rank?.r}</div>
+                              <div style={{fontSize:10,color:"#555",marginTop:2}}>{myBest?.mc}개 일치</div>
+                            </div>
+                            <div style={{display:"flex",alignItems:"center",fontSize:12,color:"#333",fontWeight:900}}>VS</div>
+                            <div style={{flex:1,background:"rgba(255,150,80,0.06)",borderRadius:12,padding:"10px",textAlign:"center"}}>
+                              <div style={{fontSize:10,color:"#555",marginBottom:4}}>👤 친구</div>
+                              <div style={{fontSize:20}}>{fRank?.rank?.e}</div>
+                              <div style={{fontSize:13,fontWeight:900,color:fRank?.rank?.c}}>{fRank?.rank?.r}</div>
+                              <div style={{fontSize:10,color:"#555",marginTop:2}}>{fRank?.mc}개 일치</div>
+                            </div>
+                          </div>
+
+                          {/* 한 줄 결과 */}
+                          <div style={{textAlign:"center",fontSize:16,fontWeight:900,marginBottom:10,
+                            color:(myBest?.mc||0)>=(fRank?.mc||0)?"#f9d71c":"#ff7272"}}>
+                            {(myBest?.mc||0)>(fRank?.mc||0)?"내가 더 맞혔어! 😏":
+                             (myBest?.mc||0)<(fRank?.mc||0)?"이번엔 친구가... 😅":
+                             "똑같이 맞혔네 🤝"}
+                          </div>
+
+                          {/* 공유 */}
+                          <div style={{display:"flex",gap:8}}>
+                            <button onClick={()=>{
+                              navigator.clipboard?.writeText(shareText)
+                                .then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});
+                            }} style={{flex:1,padding:"10px",borderRadius:10,border:"none",
+                              background:copied?"rgba(80,200,120,0.2)":"linear-gradient(135deg,#c8a800,#f9d71c)",
+                              color:copied?"#50c878":"#000",fontSize:12,fontWeight:900,cursor:"pointer"}}>
+                              {copied?"✅ 복사됨!":"📋 자랑 문구 복사"}
+                            </button>
+                            <button onClick={()=>{setFDone(false);setFNums(["","","","","",""]);setCopied(false);}}
+                              style={{padding:"10px 14px",borderRadius:10,border:"1px solid rgba(255,255,255,0.08)",
+                                background:"transparent",color:"#555",fontSize:12,cursor:"pointer"}}>
+                              🔄
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>);
+              })()}
+            </div>
+          );
+        })()}
+
         {!winNums&&(
           <div style={{textAlign:"center",padding:"20px 0",color:"#333",fontSize:12}}>
             회차 입력하면 내 번호와 자동 비교해드려요 🎰
@@ -2984,7 +3151,7 @@ function VaultScreen({saved,onBack}){
             ))}
           </div>
           <div style={{display:"flex",gap:8}}>
-            <input value={purchaseAmt} onChange={e=>setPurchaseAmt(e.target.value.replace(/\D/g,""))}
+            <input type="tel" inputMode="numeric" value={purchaseAmt} onChange={e=>setPurchaseAmt(e.target.value.replace(/\D/g,""))}
               placeholder="직접입력 (원)" style={{flex:1,background:"rgba(255,255,255,0.05)",
                 border:"1px solid rgba(249,215,28,0.15)",borderRadius:8,
                 padding:"8px 10px",color:"#fff",fontSize:13,outline:"none"}}/>
@@ -3062,9 +3229,9 @@ function ProfileScreen({profile,onSave,onBack}){
     <div style={{width:"100%",maxWidth:420}}>
       <div style={{...box({marginBottom:12})}}>
         <div style={{fontSize:11,color:"#888",marginBottom:6}}>이름 (선택)</div>
-        <input value={name} onChange={e=>setName(e.target.value)} placeholder="이름" style={{...inp,marginBottom:14}}/>
+        <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="이름" style={{...inp,marginBottom:14}}/>
         <div style={{fontSize:11,color:"#888",marginBottom:6}}>생년도</div>
-        <input value={year} onChange={e=>setYear(e.target.value.replace(/\D/g,"").slice(0,4))} placeholder="예: 1980" style={inp}/>
+        <input type="tel" inputMode="numeric" value={year} onChange={e=>setYear(e.target.value.replace(/\D/g,"").slice(0,4))} placeholder="예: 1980" style={inp}/>
         {year.length===4&&(
           <div style={{display:"flex",gap:8,marginTop:8}}>
             {[[`${pa}세`,"나이"],[`${getZodiacEm(pz)} ${pz}띠`,"띠"]].map(([v,k])=>(
