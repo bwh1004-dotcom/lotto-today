@@ -1144,16 +1144,41 @@ function LocationScreen({onSave,onShare,onBack}){
     setGlobeOpacity(0);
     setTimeout(()=>{
       setPhase("locating");
-      const init=(lat,lng,err=false)=>{
+      const KAKAO_KEY="17331fc0842da83b7f13ec82795cb4de";
+      const fetchStores=async(lat,lng,err=false)=>{
         setMyLoc({lat,lng});setLocErr(err);
-        const sorted=[...LOTTO_STORES].map(s=>({...s,dist:locDist(lat,lng,s.lat,s.lng)})).sort((a,b)=>a.dist-b.dist).slice(0,6);
-        setNearStores(sorted);setPhase("map");
+        try{
+          const res=await fetch(
+            `https://dapi.kakao.com/v2/local/search/keyword.json?query=로또판매점&x=${lng}&y=${lat}&radius=5000&sort=distance&size=6`,
+            {headers:{"Authorization":`KakaoAK ${KAKAO_KEY}`}}
+          );
+          const data=await res.json();
+          if(data.documents&&data.documents.length>0){
+            const stores=data.documents.map(d=>({
+              name:d.place_name,
+              addr:d.road_address_name||d.address_name,
+              lat:parseFloat(d.y),
+              lng:parseFloat(d.x),
+              dist:parseFloat(d.distance)/1000,
+              wins:0,
+            }));
+            setNearStores(stores);
+          } else {
+            // API 결과 없으면 하드코딩 데이터 fallback
+            const sorted=[...LOTTO_STORES].map(s=>({...s,dist:locDist(lat,lng,s.lat,s.lng)})).sort((a,b)=>a.dist-b.dist).slice(0,6);
+            setNearStores(sorted);
+          }
+        }catch(e){
+          const sorted=[...LOTTO_STORES].map(s=>({...s,dist:locDist(lat,lng,s.lat,s.lng)})).sort((a,b)=>a.dist-b.dist).slice(0,6);
+          setNearStores(sorted);
+        }
+        setPhase("map");
       };
       if(navigator.geolocation){
         navigator.geolocation.getCurrentPosition(
-          p=>init(p.coords.latitude,p.coords.longitude),
-          ()=>init(37.5665,126.9780,true),{timeout:6000});
-      } else init(37.5665,126.9780,true);
+          p=>fetchStores(p.coords.latitude,p.coords.longitude),
+          ()=>fetchStores(37.5665,126.9780,true),{timeout:6000});
+      } else fetchStores(37.5665,126.9780,true);
     },800);
   };
 
