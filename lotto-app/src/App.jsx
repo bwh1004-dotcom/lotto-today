@@ -3314,6 +3314,25 @@ export default function App(){
   // ══ HOME ═══════════════════════════════════════════════════
   const lastSaved=saved.length>0?saved[0]:null;
   const MENUS=[
+    {id:"today",    em:"🌅",title:"오늘의 하루",  tc:"#f9d71c",accent:"#f9d71c22",sub:"기분·날씨·걸음수로 번호 뽑기"},
+    {id:"location", em:"📍",title:"우리동네 명당", tc:"#ff9800",accent:"#ff980022",sub:"GPS 기준 명당 좌표로 번호 추출"},
+    {id:"dream",    em:"🌙",title:"꿈해몽",        tc:"#c084fc",accent:"#c084fc22",sub:"꿈 키워드 + 역대 당첨 빈도 조합"},
+    {id:"fortune",  em:"⭐",title:"오늘의 운세",   tc:"#a78bfa",accent:"#a78bfa22",sub:"지금 이 순간의 시각·날짜로 번호"},
+    {id:"wheel",    em:"🎡",title:"행운의 휠",     tc:"#f9d71c",accent:"#f9d71c22",sub:"6번 스핀 → 번호 추출"},
+    {id:"slot",     em:"🏢",title:"아파트불빛",    tc:"#69c8f2",accent:"#69c8f222",sub:"아파트 구매 후 홈파티로 번호 뽑기"},
+    {id:"formula",  em:"🎂",title:"가족의행운",    tc:"#69c8f2",accent:"#69c8f222",sub:"가족 생년월일로 번호를 뽑아요"},
+    {id:"favorites",em:"💛",title:"선호번호",      tc:"#f9d71c",accent:"#f9d71c22",sub:"평생번호 + 오늘의 선택번호"},
+  ];
+  const DAY_REC=[
+    {em:"🌅",title:"오늘의 하루",  id:"today",   sub:"오늘 하루를 기록해서"},
+    {em:"📍",title:"우리동네 명당",id:"location",sub:"내 주변 명당의 기운을"},
+    {em:"🌙",title:"꿈해몽",       id:"dream",   sub:"어젯밤 꿈으로"},
+    {em:"⭐",title:"오늘의 운세",  id:"fortune", sub:"지금 이 순간의 운세를"},
+    {em:"🎡",title:"행운의 휠",    id:"wheel",   sub:"휠을 돌려서"},
+    {em:"🏢",title:"아파트불빛",   id:"slot",    sub:"내 집 마련의 꿈으로"},
+    {em:"🎂",title:"가족의행운",   id:"formula", sub:"가족과 함께하는"},
+  ];
+  const recommended=DAY_REC[new Date().getDay()];
 
   return(
     <div style={{...W,display:"flex",flexDirection:"column",alignItems:"center",position:"relative",overflow:"hidden"}}>
