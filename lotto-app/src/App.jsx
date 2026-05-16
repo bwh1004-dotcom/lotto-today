@@ -1090,18 +1090,34 @@ function LocationScreen({onSave,onShare,onBack}){
 
 function FormulaScreen({onSave,onShare,onBack}){
   const MEMBERS=[
-    {id:"father",    label:"아버지", initial:"부",  color:"#ff9800"},
-    {id:"mother",    label:"어머니", initial:"모",  color:"#ff7eb3"},
-    {id:"wife",      label:"아내",   initial:"아",  color:"#f06292"},
-    {id:"husband",   label:"남편",   initial:"남",  color:"#69c8f2"},
-    {id:"son1",      label:"아들①", initial:"자①", color:"#81c784"},
-    {id:"son2",      label:"아들②", initial:"자②", color:"#4db6ac"},
-    {id:"son3",      label:"아들③", initial:"자③", color:"#26a69a"},
-    {id:"daughter1", label:"딸①",   initial:"녀①", color:"#ce93d8"},
-    {id:"daughter2", label:"딸②",   initial:"녀②", color:"#ba68c8"},
-    {id:"daughter3", label:"딸③",   initial:"녀③", color:"#ab47bc"},
-    {id:"friend",    label:"친구",   initial:"友",  color:"#ffb74d"},
+    {id:"father",    label:"아버지", color:"#ff9800", cake:{body:"#ff9800",cream:"#ffe0b2",candle:"#ff5722"}},
+    {id:"mother",    label:"어머니", color:"#ff7eb3", cake:{body:"#ff7eb3",cream:"#fce4ec",candle:"#e91e63"}},
+    {id:"wife",      label:"아내",   color:"#f06292", cake:{body:"#f06292",cream:"#fce4ec",candle:"#c2185b"}},
+    {id:"husband",   label:"남편",   color:"#69c8f2", cake:{body:"#69c8f2",cream:"#e3f2fd",candle:"#1976d2"}},
+    {id:"son1",      label:"아들①", color:"#81c784", cake:{body:"#81c784",cream:"#e8f5e9",candle:"#388e3c"}},
+    {id:"son2",      label:"아들②", color:"#4db6ac", cake:{body:"#4db6ac",cream:"#e0f2f1",candle:"#00796b"}},
+    {id:"son3",      label:"아들③", color:"#26a69a", cake:{body:"#26a69a",cream:"#e0f2f1",candle:"#004d40"}},
+    {id:"daughter1", label:"딸①",   color:"#ce93d8", cake:{body:"#ce93d8",cream:"#f3e5f5",candle:"#7b1fa2"}},
+    {id:"daughter2", label:"딸②",   color:"#ba68c8", cake:{body:"#ba68c8",cream:"#f3e5f5",candle:"#6a1b9a"}},
+    {id:"daughter3", label:"딸③",   color:"#ab47bc", cake:{body:"#ab47bc",cream:"#f3e5f5",candle:"#4a148c"}},
+    {id:"friend",    label:"친구",   color:"#ffb74d", cake:{body:"#ffb74d",cream:"#fff8e1",candle:"#f57c00"}},
   ];
+
+  const CakeIcon=({cake,size=40})=>(
+    <svg width={size} height={size} viewBox="0 0 40 40">
+      {/* 케익 몸통 */}
+      <rect x="6" y="18" width="28" height="16" rx="3" fill={cake.body} opacity="0.9"/>
+      {/* 크림 상단 */}
+      <path d="M6 18 Q10 13 14 18 Q18 13 22 18 Q26 13 30 18 Q34 13 34 18" fill={cake.cream} stroke={cake.body} strokeWidth="0.5"/>
+      {/* 초 */}
+      <rect x="18" y="8" width="4" height="10" rx="1" fill={cake.candle} opacity="0.9"/>
+      {/* 불꽃 */}
+      <ellipse cx="20" cy="7" rx="2.5" ry="3.5" fill="#f9d71c" opacity="0.95"/>
+      <ellipse cx="20" cy="7.5" rx="1.2" ry="2" fill="#ff9800"/>
+      {/* 케익 장식선 */}
+      <line x1="6" y1="26" x2="34" y2="26" stroke={cake.cream} strokeWidth="1" opacity="0.5"/>
+    </svg>
+  );
 
   const[dates,setDates]=useState({});
   const[sel,setSel]=useState([]);
@@ -1245,18 +1261,18 @@ function FormulaScreen({onSave,onShare,onBack}){
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
           {MEMBERS.map(m=>{
             const isSel=sel.includes(m.id);
-            const fSize=m.initial.length>1?11:17;
-            return(<button key={m.id} onClick={()=>toggleMember(m.id)} style={{
+            return(<button key={m.id} onClick={()=>{SFX.tone(isSel?300:520,0.08,"sine",0.12);toggleMember(m.id);}} style={{
               display:"flex",flexDirection:"column",alignItems:"center",gap:5,
               background:"none",border:"none",cursor:"pointer",padding:"4px 2px",
               opacity:isSel?1:0.38,transition:"opacity .2s,transform .15s",
-              transform:isSel?"scale(1.06)":"scale(1)"}} onClick={()=>{SFX.tone(isSel?300:520,0.08,"sine",0.12);toggleMember(m.id);}}>              <div style={{width:48,height:48,borderRadius:"50%",
-                background:isSel?`${m.color}28`:"rgba(255,255,255,0.05)",
+              transform:isSel?"scale(1.06)":"scale(1)"}}>
+              <div style={{
+                width:52,height:52,borderRadius:12,
+                background:isSel?`${m.color}22`:"rgba(255,255,255,0.04)",
                 border:`2px solid ${isSel?m.color:"rgba(255,255,255,0.1)"}`,
                 display:"flex",alignItems:"center",justifyContent:"center",
-                fontSize:fSize,fontWeight:900,color:isSel?m.color:"#555",
                 transition:"all .2s",boxShadow:isSel?`0 0 14px ${m.color}44`:"none"}}>
-                {m.initial}
+                <CakeIcon cake={m.cake} size={36}/>
               </div>
               <div style={{fontSize:9,color:isSel?m.color:"#555",fontWeight:isSel?700:400,
                 transition:"color .2s",textAlign:"center",lineHeight:1.3,whiteSpace:"nowrap"}}>
@@ -1275,12 +1291,13 @@ function FormulaScreen({onSave,onShare,onBack}){
             const done=dates[id]&&dates[id].replace(/\D/g,"").length>=8;
             return(<div key={id} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 0",
               borderBottom:idx<sel.length-1?"1px solid rgba(255,150,0,0.06)":"none"}}>
-              <div style={{width:36,height:36,borderRadius:"50%",flexShrink:0,
-                background:done?`${m.color}28`:"rgba(255,255,255,0.04)",
+              <div style={{
+                width:40,height:40,borderRadius:10,flexShrink:0,
+                background:done?`${m.color}22`:"rgba(255,255,255,0.04)",
                 border:`2px solid ${done?m.color:"rgba(255,255,255,0.08)"}`,
                 display:"flex",alignItems:"center",justifyContent:"center",
-                fontSize:m.initial.length>1?10:15,fontWeight:900,color:done?m.color:"#555",transition:"all .3s"}}>
-                {m.initial}
+                transition:"all .3s",opacity:done?1:0.5}}>
+                <CakeIcon cake={m.cake} size={28}/>
               </div>
               <div style={{flex:1}}>
                 <div style={{fontSize:11,marginBottom:5,fontWeight:700,color:done?m.color:"#665544"}}>
