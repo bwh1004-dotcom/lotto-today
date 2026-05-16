@@ -12,8 +12,9 @@
     <link rel="apple-touch-icon" href="favicon.png" />
     <link rel="manifest" href="manifest.json" />
     <meta name="apple-mobile-web-app-title" content="오늘의 행운" />
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=efc423e7ded01594e4919ffc4b0f0ea6&libraries=services"></script>
     <script>
-      if('serviceWorker' in navigator){
+      if('serviceWorker' in navigator && location.protocol.startsWith('http') && !window.Capacitor){
         window.addEventListener('load',()=>{
           navigator.serviceWorker.register('/lotto-today/sw.js')
             .then(r=>console.log('SW registered'))
