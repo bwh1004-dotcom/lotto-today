@@ -1,18 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { Player } from "@lottiefiles/react-lottie-player";
-import lottieToday from "./assets/lottie/today.json";
-import lottieLocation from "./assets/lottie/location.json";
-import lottieDream from "./assets/lottie/dream.json";
-import lottieFortune from "./assets/lottie/fortune.json";
-import lottieWheel from "./assets/lottie/wheel.json";
-import lottieSlot from "./assets/lottie/slot.json";
-import lottieFormula from "./assets/lottie/formula.json";
-import lottieFavorites from "./assets/lottie/favorites.json";
-
-const MENU_LOTTIE={
-  today:lottieToday, location:lottieLocation, dream:lottieDream, fortune:lottieFortune,
-  wheel:lottieWheel, slot:lottieSlot, formula:lottieFormula, favorites:lottieFavorites,
-};
 
 // ════════════════════════════════════════════════════════════
 // 데이터
@@ -370,6 +356,7 @@ function TodayScreen({profile,onSave,onShare,onBack}){
   const[mood,setMood]=useState(null);
   const[weather,setWeather]=useState(null);
   const[steps,setSteps]=useState("");
+  const[carNum,setCarNum]=useState("");
   const[meals,setMeals]=useState(null);
   const[lucky,setLucky]=useState(null);
   const[nums,setNums]=useState(null);
@@ -430,6 +417,11 @@ function TodayScreen({profile,onSave,onShare,onBack}){
     const w=WEATHERS.find(x=>x.id===weather);
     if(w){const b=w.bonus;pool.push(b,b+10>45?b-10:b+10);}
     if(steps){const n=parseInt(steps.replace(/,/g,""));const d=n%100;if(d>=1&&d<=45)pool.push(d);const d2=Math.floor(n/100)%45+1;pool.push(d2);}
+    if(carNum&&carNum.length>=2){
+      const c1=parseInt(carNum.slice(0,2))%45+1;
+      const c2=parseInt(carNum.slice(-2))%45+1;
+      pool.push(c1);if(c2!==c1)pool.push(c2);
+    }
     if(meals){pool.push(meals*11>45?meals*5:meals*11,meals*7>45?meals*3:meals*7);}
     if(lucky==="yes"){pool.push(31,42,7);}
     const d=new Date();
@@ -526,11 +518,30 @@ function TodayScreen({profile,onSave,onShare,onBack}){
       {/* 추가 정보 */}
       <div style={{...box({marginBottom:14})}}>
         <div style={{fontSize:12,fontWeight:700,color:"#aaa",marginBottom:10}}>오늘 더 기록할게요</div>
-        <div style={{marginBottom:12}}>
-          <div style={{fontSize:11,color:"#666",marginBottom:5}}>👟 오늘 걸음수 (선택)</div>
-          <input type="tel" inputMode="numeric" value={steps} onChange={e=>setSteps(e.target.value.replace(/\D/g,""))} placeholder="예: 8500"
-            style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",
-              borderRadius:8,padding:"10px 12px",color:"#fff",fontSize:14,boxSizing:"border-box",outline:"none"}}/>
+        {/* 걸음수 + 차량번호 */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+          <div>
+            <div style={{fontSize:11,color:"#666",marginBottom:5}}>🚶 오늘 걸음수</div>
+            <input type="tel" inputMode="numeric" value={steps}
+              onChange={e=>setSteps(e.target.value.replace(/\D/g,""))}
+              placeholder="예: 8500"
+              style={{width:"100%",background:"rgba(255,255,255,0.06)",
+                border:`1px solid ${steps?"rgba(249,215,28,0.3)":"rgba(255,255,255,0.1)"}`,
+                borderRadius:8,padding:"10px 8px",color:"#fff",fontSize:13,
+                boxSizing:"border-box",outline:"none",textAlign:"center"}}/>
+            {!steps&&<div style={{fontSize:9,color:"#444",marginTop:4,textAlign:"center"}}>안 걸으면 비워도 돼요</div>}
+          </div>
+          <div>
+            <div style={{fontSize:11,color:"#666",marginBottom:5}}>🚗 차량번호 끝 4자리</div>
+            <input type="tel" inputMode="numeric" value={carNum}
+              onChange={e=>setCarNum(e.target.value.replace(/\D/g,"").slice(0,4))}
+              placeholder="예: 1234" maxLength={4}
+              style={{width:"100%",background:"rgba(255,255,255,0.06)",
+                border:`1px solid ${carNum.length===4?"rgba(105,200,242,0.3)":"rgba(255,255,255,0.1)"}`,
+                borderRadius:8,padding:"10px 8px",color:"#fff",fontSize:13,
+                boxSizing:"border-box",outline:"none",textAlign:"center"}}/>
+            {!carNum&&<div style={{fontSize:9,color:"#444",marginTop:4,textAlign:"center"}}>없으면 비워도 돼요</div>}
+          </div>
         </div>
         <div style={{marginBottom:12}}>
           <div style={{fontSize:11,color:"#666",marginBottom:5}}>🍚 오늘 밥 몇 번 먹었어요?</div>
@@ -1199,46 +1210,81 @@ function LocationScreen({onSave,onShare,onBack}){
 
   const GR=120,GCX=130,GCY=130;
 
+  // 대륙 윤곽선 좌표
+  const CONTINENTS=[
+    {name:"Korea",points:[[38,124],[38,130],[34,129],[34,127],[35,126],[38,124]]},
+    {name:"Japan",points:[[31,131],[33,131],[34,133],[36,136],[38,141],[40,141],[41,140],[38,138],[35,137],[33,131],[31,131]]},
+    {name:"China",points:[[40,73],[48,87],[53,120],[47,135],[40,122],[32,121],[22,114],[20,110],[22,101],[26,95],[28,97],[30,90],[35,80],[40,73]]},
+    {name:"SEA",points:[[20,100],[10,100],[5,103],[1,104],[5,108],[10,107],[16,108],[20,106],[20,100]]},
+    {name:"India",points:[[28,67],[28,78],[23,92],[8,77],[8,68],[20,67],[28,67]]},
+    {name:"Europe",points:[[36,5],[44,-8],[56,-9],[60,5],[70,18],[71,28],[65,28],[58,22],[55,10],[52,4],[48,0],[44,5],[38,15],[36,5]]},
+    {name:"Africa",points:[[37,10],[37,35],[30,34],[12,44],[5,42],[-10,40],[-25,33],[-34,18],[-34,26],[-25,33],[-10,40],[5,2],[5,-8],[15,-17],[30,-17],[37,10]]},
+    {name:"NorthAmerica",points:[[72,-80],[65,-140],[60,-140],[55,-130],[48,-124],[30,-117],[20,-105],[15,-92],[20,-87],[25,-80],[30,-80],[35,-76],[42,-70],[46,-53],[50,-54],[60,-64],[72,-80]]},
+    {name:"SouthAmerica",points:[[12,-72],[10,-62],[0,-50],[-10,-37],[-20,-40],[-34,-53],[-55,-68],[-55,-65],[-40,-62],[-20,-40],[-10,-76],[0,-78],[10,-78],[12,-72]]},
+    {name:"Australia",points:[[-14,129],[-14,136],[-18,146],[-24,154],[-38,146],[-38,140],[-32,124],[-22,114],[-18,122],[-14,129]]},
+    {name:"Russia",points:[[55,30],[60,30],[70,40],[72,70],[70,100],[65,140],[55,140],[50,135],[45,133],[50,130],[50,120],[55,110],[55,80],[50,70],[52,55],[55,50],[55,30]]},
+  ];
+
+  // 구면 투영
+  const proj=(lat,lng)=>{
+    const phi=lat*Math.PI/180;
+    const lambda=(lng+globeRot)*Math.PI/180;
+    return{
+      x:GCX+GR*Math.cos(phi)*Math.sin(lambda),
+      y:GCY-GR*Math.sin(phi),
+      v:Math.cos(phi)*Math.cos(lambda)>0,
+    };
+  };
+
+  // 대륙 path 빌드
+  const buildContPath=(points)=>{
+    const segs=[]; let cur=[];
+    for(const [lat,lng] of points){
+      const p=proj(lat,lng);
+      if(p.v) cur.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`);
+      else{ if(cur.length>1)segs.push(cur); cur=[]; }
+    }
+    if(cur.length>1)segs.push(cur);
+    return segs.map(s=>`M ${s.join(' L ')}`).join(' ');
+  };
+
   const renderMeridians=()=>{
     const els=[];
-    for(let i=0;i<24;i++){
-      const deg=(i*15+globeRot)%360;
-      const rad=deg*Math.PI/180;
-      const cosVal=Math.cos(rad);
-      if(cosVal<-0.05)continue;
-      const rx=Math.abs(cosVal)*GR;
-      const alpha=Math.max(0,cosVal)*0.3;
-      els.push(<ellipse key={i} cx={GCX} cy={GCY} rx={rx} ry={GR}
-        fill="none" stroke={`rgba(105,200,242,${alpha})`} strokeWidth="0.6"/>);
+    for(let lng=0;lng<360;lng+=20){
+      let d="",first=true;
+      for(let lat=-90;lat<=90;lat+=4){
+        const p=proj(lat,lng-180);
+        if(!p.v){first=true;continue;}
+        d+=first?`M ${p.x.toFixed(1)} ${p.y.toFixed(1)}`:`L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
+        first=false;
+      }
+      if(d)els.push(<path key={`m${lng}`} d={d} fill="none" stroke="rgba(105,200,242,0.12)" strokeWidth="0.6"/>);
     }
     return els;
   };
+
   const renderParallels=()=>{
     const els=[];
-    for(let lat=-80;lat<=80;lat+=10){
-      const latRad=lat*Math.PI/180;
-      const cosLat=Math.cos(latRad);
-      const y=GCY-Math.sin(latRad)*GR;
-      const rx=cosLat*GR;
-      els.push(<ellipse key={lat} cx={GCX} cy={y} rx={rx} ry={rx*0.06}
-        fill="none" stroke={`rgba(105,200,242,${0.1+cosLat*0.12})`} strokeWidth="0.5"/>);
+    for(let lat=-60;lat<=60;lat+=20){
+      let d="",first=true;
+      for(let lng=-180;lng<=180;lng+=3){
+        const p=proj(lat,lng);
+        if(!p.v){first=true;continue;}
+        d+=first?`M ${p.x.toFixed(1)} ${p.y.toFixed(1)}`:`L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
+        first=false;
+      }
+      if(d)els.push(<path key={`p${lat}`} d={d} fill="none" stroke="rgba(105,200,242,0.12)" strokeWidth="0.6"/>);
     }
     return els;
   };
+
   const renderPin=()=>{
-    const lonRad=((127+globeRot)*Math.PI/180);
-    const latRad=(37*Math.PI/180);
-    const cosLon=Math.cos(lonRad);
-    if(cosLon<0.15)return null;
-    const x=GCX+Math.sin(lonRad)*GR*0.9;
-    const y=GCY-Math.sin(latRad)*GR*0.9;
+    const p=proj(37.5,127);
+    if(!p.v)return null;
     return(<g>
-      <circle cx={x} cy={y} r={4*cosLon} fill="#f9d71c"
-        style={{filter:"drop-shadow(0 0 6px #f9d71c)"}}/>
-      <circle cx={x} cy={y} r={8*cosLon} fill="none"
-        stroke="rgba(249,215,28,0.4)" strokeWidth="1"/>
-      {cosLon>0.5&&<text x={x} y={y-10*cosLon} textAnchor="middle"
-        fontSize={8*cosLon} fill="rgba(249,215,28,0.8)">KR</text>}
+      <circle cx={p.x} cy={p.y} r={5} fill="#f9d71c" style={{filter:"drop-shadow(0 0 6px #f9d71c)"}}/>
+      <circle cx={p.x} cy={p.y} r={9} fill="none" stroke="rgba(249,215,28,0.35)" strokeWidth="1"/>
+      <text x={p.x+8} y={p.y-6} textAnchor="start" fontSize="9" fontWeight="bold" fill="rgba(249,215,28,0.9)">KR</text>
     </g>);
   };
 
@@ -1282,8 +1328,9 @@ function LocationScreen({onSave,onShare,onBack}){
             </text>
           </g>);
         })}
+        <circle cx={myX} cy={myY} r={10} fill="rgba(105,200,242,0.15)" stroke="rgba(105,200,242,0.3)" strokeWidth="1" style={{animation:"myPulse 1.5s ease-in-out infinite"}}/>
         <circle cx={myX} cy={myY} r={6} fill="rgba(105,200,242,0.3)" stroke="#69c8f2" strokeWidth="1.5"/>
-        <circle cx={myX} cy={myY} r={3} fill="#69c8f2"/>
+        <circle cx={myX} cy={myY} r={3} fill="#69c8f2" style={{animation:"myBlink 1.5s ease-in-out infinite"}}/>
         <text x={myX} y={myY+14} textAnchor="middle" fontSize="8" fill="#69c8f2">나</text>
       </svg>
     );
@@ -1339,7 +1386,9 @@ function LocationScreen({onSave,onShare,onBack}){
         <circle cx={GCX} cy={GCY} r={GR+8} fill="none" stroke="rgba(105,200,242,0.08)" strokeWidth="8"/>
         <circle cx={GCX} cy={GCY} r={GR} fill="url(#gbg)"/>
         <g clipPath="url(#gclip)">
-          {renderParallels()}{renderMeridians()}{renderPin()}
+          {renderParallels()}{renderMeridians()}
+          {CONTINENTS.map(c=>{const d=buildContPath(c.points);return d?<path key={c.name} d={d} fill="none" stroke="rgba(105,200,242,0.55)" strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round"/>:null;})}
+          {renderPin()}
           <circle cx={GCX} cy={GCY} r={GR} fill="url(#gshadow)"/>
           <circle cx={GCX} cy={GCY} r={GR} fill="url(#gshine)"/>
         </g>
@@ -1360,7 +1409,11 @@ function LocationScreen({onSave,onShare,onBack}){
         boxShadow:"0 4px 24px rgba(105,200,242,0.25)",letterSpacing:1}}>
         📍 이 위치로 확인
       </button>
-      <style>{`@keyframes gswing{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}`}</style>
+      <style>{`
+        @keyframes gswing{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+        @keyframes myPulse{0%,100%{opacity:0.2;r:10}50%{opacity:1;r:14}}
+        @keyframes myBlink{0%,100%{opacity:1}50%{opacity:0.3}}
+      `}</style>
     </div>
   );
 
@@ -1368,6 +1421,24 @@ function LocationScreen({onSave,onShare,onBack}){
   return(<div style={W}>
     <PetalOverlay petals={petals}/>
     {showClover&&<CloverPopup onDone={()=>{setShowClover(false);generate();}}/>}
+
+    {/* 나침반 방위표 */}
+    <div style={{position:"fixed",top:60,right:16,zIndex:10,pointerEvents:"none"}}>
+      <svg width={44} height={44} viewBox="0 0 64 64">
+        <circle cx={32} cy={32} r={30} fill="rgba(5,12,26,0.75)" stroke="rgba(105,200,242,0.2)" strokeWidth="1"/>
+        <line x1={32} y1={6} x2={32} y2={58} stroke="rgba(105,200,242,0.2)" strokeWidth="0.7"/>
+        <line x1={6} y1={32} x2={58} y2={32} stroke="rgba(105,200,242,0.2)" strokeWidth="0.7"/>
+        <polygon points="32,8 28,26 32,22 36,26" fill="#ff5555" opacity="0.9"/>
+        <polygon points="32,56 28,38 32,42 36,38" fill="rgba(105,200,242,0.5)"/>
+        <circle cx={56} cy={32} r={2.5} fill="rgba(105,200,242,0.4)"/>
+        <circle cx={8} cy={32} r={2.5} fill="rgba(105,200,242,0.4)"/>
+        <circle cx={32} cy={32} r={3} fill="rgba(105,200,242,0.8)"/>
+        <text x={32} y={5} textAnchor="middle" fontSize="8" fill="#ff7777" fontWeight="bold">N</text>
+        <text x={32} y={62} textAnchor="middle" fontSize="8" fill="rgba(105,200,242,0.6)">S</text>
+        <text x={62} y={35} textAnchor="middle" fontSize="8" fill="rgba(105,200,242,0.6)">E</text>
+        <text x={2} y={35} textAnchor="middle" fontSize="8" fill="rgba(105,200,242,0.6)">W</text>
+      </svg>
+    </div>
 
     {/* 격자 배경 */}
     <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0}}>
@@ -1528,6 +1599,7 @@ function FormulaScreen({onSave,onShare,onBack}){
     {id:"daughter2", label:"딸②",   color:"#ba68c8", em:"🎂", cake:{body:"#ba68c8",cream:"#f3e5f5",candle:"#6a1b9a"}},
     {id:"daughter3", label:"딸③",   color:"#ab47bc", em:"🎂", cake:{body:"#ab47bc",cream:"#f3e5f5",candle:"#4a148c"}},
     {id:"friend",    label:"친구",   color:"#ffb74d", em:"🎂", cake:{body:"#ffb74d",cream:"#fff8e1",candle:"#f57c00"}},
+    {id:"etc",       label:"기타",   color:"#90a4ae", em:"🎂", cake:{body:"#90a4ae",cream:"#eceff1",candle:"#546e7a"}},
     // 기념일
     {id:"wedding",   label:"결혼기념일", color:"#f48fb1", em:"💒", cake:{body:"#f48fb1",cream:"#fce4ec",candle:"#e91e63"}},
     {id:"firstbday", label:"첫돌",       color:"#80cbc4", em:"👶", cake:{body:"#80cbc4",cream:"#e0f2f1",candle:"#00796b"}},
@@ -2692,43 +2764,115 @@ function ApartmentScreen({onSave,onShare,onBack}){
     {/* 지역/아파트 선택 화면 */}
     {phase==="select"&&(
       <div style={{width:"100%",maxWidth:420,padding:"0 4px"}}>
-        <div style={{textAlign:"center",marginBottom:16}}>
-          <div style={{fontSize:13,color:"#f9d71c",fontWeight:700,marginBottom:4}}>🏠 내 집 마련의 꿈</div>
-          <div style={{fontSize:11,color:"#555"}}>어느 아파트를 구매해서 홈파티를 열까요?</div>
+        {/* 헤더 */}
+        <div style={{textAlign:"center",marginBottom:24}}>
+          <div style={{fontSize:40,marginBottom:8}}>🏠</div>
+          <div style={{fontSize:22,fontWeight:900,
+            background:"linear-gradient(90deg,#f9d71c,#ff9800)",
+            WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",
+            marginBottom:6}}>내 집 마련의 꿈</div>
+          <div style={{fontSize:11,color:"#444",letterSpacing:1}}>어느 도시에 내 집을 마련할까요?</div>
         </div>
-        {/* 지역 선택 */}
-        <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"center",marginBottom:14}}>
-          {Object.keys(DREAM_APTS).map(r=>(
-            <button key={r} onClick={()=>{setSelectedRegion(r);setSelectedApt(null);}} style={{
-              padding:"7px 14px",borderRadius:20,border:`1px solid ${selectedRegion===r?"#f9d71c":"rgba(255,255,255,0.1)"}`,
-              background:selectedRegion===r?"rgba(249,215,28,0.1)":"rgba(255,255,255,0.03)",
-              color:selectedRegion===r?"#f9d71c":"#666",fontSize:12,fontWeight:selectedRegion===r?700:400,
-              cursor:"pointer",transition:"all .2s"}}>{r}</button>
-          ))}
+
+        {/* 광역시 - 가로 스크롤 카드 */}
+        <div style={{fontSize:9,color:"#444",fontWeight:700,letterSpacing:2,marginBottom:10}}>
+          🏙️ 특별시 · 광역시
         </div>
-        {/* 아파트 TOP5 */}
-        {selectedRegion&&DREAM_APTS[selectedRegion].map((apt,i)=>{
-          const isSel=selectedApt?.name===apt.name;
-          return(<div key={i} onClick={()=>setSelectedApt(apt)} style={{
-            display:"flex",alignItems:"center",gap:12,
-            background:isSel?"rgba(249,215,28,0.07)":"rgba(255,255,255,0.02)",
-            border:`1px solid ${isSel?"rgba(249,215,28,0.3)":"rgba(255,255,255,0.05)"}`,
-            borderRadius:12,padding:"12px 14px",marginBottom:8,cursor:"pointer",transition:"all .2s"}}>
-            <div style={{fontSize:18,fontWeight:900,color:isSel?"#f9d71c":"#444",minWidth:24}}>
-              {i+1}
-            </div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:13,fontWeight:700,color:isSel?"#f9d71c":"#888"}}>{apt.name}</div>
-              <div style={{fontSize:10,color:"#444",marginTop:2}}>{selectedRegion} {apt.addr} · {apt.area}㎡</div>
-            </div>
-            <div style={{textAlign:"right"}}>
-              <div style={{fontSize:12,fontWeight:900,color:isSel?"#ff9800":"#555"}}>
-                {(apt.price/10000).toFixed(0)}억
+        <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8,marginBottom:16,
+          scrollbarWidth:"none",msOverflowStyle:"none"}}>
+          {[
+            {r:"서울",em:"🗼",c:"#f9d71c"},{r:"부산",em:"🌊",c:"#4ecdc4"},
+            {r:"대구",em:"🏔️",c:"#ffe66d"},{r:"광주",em:"🌸",c:"#6c63ff"},
+            {r:"대전",em:"⚗️",c:"#ff9ff3"},{r:"인천",em:"✈️",c:"#54a0ff"},
+            {r:"울산",em:"🐋",c:"#5f27cd"},{r:"세종",em:"🌿",c:"#01cbd1"},
+          ].map(({r,em,c})=>{
+            const isSel=selectedRegion===r;
+            return(
+              <button key={r} onClick={()=>{setSelectedRegion(r);setSelectedApt(null);}} style={{
+                flexShrink:0,padding:"12px 16px",borderRadius:16,cursor:"pointer",
+                border:`1.5px solid ${isSel?c:"rgba(255,255,255,0.06)"}`,
+                background:isSel?`${c}15`:"rgba(255,255,255,0.02)",
+                display:"flex",flexDirection:"column",alignItems:"center",gap:6,
+                minWidth:64,boxShadow:isSel?`0 0 20px ${c}33`:"none",transition:"all .2s"}}>
+                <div style={{fontSize:22}}>{em}</div>
+                <div style={{fontSize:11,fontWeight:isSel?900:400,color:isSel?c:"#555"}}>{r}</div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 도 - 3열 그리드 */}
+        <div style={{fontSize:9,color:"#444",fontWeight:700,letterSpacing:2,marginBottom:10}}>
+          🌿 도
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:20}}>
+          {[
+            {r:"경기",em:"🏘️"},{r:"강원",em:"⛷️"},{r:"충북",em:"🌾"},
+            {r:"충남",em:"🌊"},{r:"전북",em:"🌸"},{r:"전남",em:"🍃"},
+            {r:"경북",em:"🍎"},{r:"경남",em:"⚓"},{r:"제주",em:"🍊"},
+          ].map(({r,em})=>{
+            const isSel=selectedRegion===r;
+            return(
+              <button key={r} onClick={()=>{setSelectedRegion(r);setSelectedApt(null);}} style={{
+                padding:"10px 8px",borderRadius:12,cursor:"pointer",
+                border:`1px solid ${isSel?"#f9d71c":"rgba(255,255,255,0.06)"}`,
+                background:isSel?"rgba(249,215,28,0.1)":"rgba(255,255,255,0.02)",
+                display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+                transition:"all .2s"}}>
+                <span style={{fontSize:14}}>{em}</span>
+                <span style={{fontSize:11,fontWeight:isSel?900:400,
+                  color:isSel?"#f9d71c":"#555"}}>{r}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 선택 지역 배너 + 아파트 */}
+        {selectedRegion&&(
+          <>
+            <div style={{
+              background:"linear-gradient(135deg,rgba(249,215,28,0.08),rgba(255,150,0,0.04))",
+              border:"1px solid rgba(249,215,28,0.15)",
+              borderRadius:16,padding:"14px 16px",marginBottom:12,
+              display:"flex",alignItems:"center",gap:12}}>
+              <div style={{fontSize:30}}>🏆</div>
+              <div>
+                <div style={{fontSize:16,fontWeight:900,
+                  background:"linear-gradient(90deg,#f9d71c,#ff9800)",
+                  WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
+                  {selectedRegion} 명품 아파트
+                </div>
+                <div style={{fontSize:10,color:"#555",marginTop:2}}>TOP 5 선택하세요</div>
               </div>
-              <div style={{fontSize:9,color:"#444"}}>{apt.floors}층</div>
             </div>
-          </div>);
-        })}
+            {DREAM_APTS[selectedRegion].map((apt,i)=>{
+              const isSel=selectedApt?.name===apt.name;
+              return(<div key={i} onClick={()=>setSelectedApt(apt)} style={{
+                display:"flex",alignItems:"center",gap:12,
+                background:isSel?"rgba(249,215,28,0.07)":"rgba(255,255,255,0.02)",
+                border:`1px solid ${isSel?"rgba(249,215,28,0.3)":"rgba(255,255,255,0.05)"}`,
+                borderRadius:14,padding:"12px 14px",marginBottom:8,cursor:"pointer",transition:"all .2s",
+                boxShadow:isSel?"0 4px 16px rgba(249,215,28,0.1)":"none"}}>
+                <div style={{width:32,height:32,borderRadius:10,flexShrink:0,
+                  background:isSel?"rgba(249,215,28,0.2)":"rgba(255,255,255,0.04)",
+                  border:`1px solid ${isSel?"rgba(249,215,28,0.4)":"rgba(255,255,255,0.06)"}`,
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:13,fontWeight:900,color:isSel?"#f9d71c":"#444"}}>{i+1}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:700,color:isSel?"#f9d71c":"#888",
+                    whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{apt.name}</div>
+                  <div style={{fontSize:10,color:"#444",marginTop:2}}>{apt.addr} · {apt.area}㎡ · {apt.floors}층</div>
+                </div>
+                <div style={{textAlign:"right",flexShrink:0}}>
+                  <div style={{fontSize:14,fontWeight:900,color:isSel?"#ff9800":"#555"}}>
+                    {(apt.price/10000).toFixed(0)}억
+                  </div>
+                </div>
+              </div>);
+            })}
+          </>
+        )}
+
         {selectedApt&&(
           <button onClick={()=>setPhase("ready")} style={{
             width:"100%",padding:"14px",borderRadius:14,border:"none",marginTop:8,
@@ -2898,8 +3042,7 @@ function VaultScreen({saved,onBack}){
     if(!drwNo||isNaN(drwNo))return;
     setLoading(true);setError("");setWinNums(null);setBonusNum(null);
     try{
-      const url=`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${drwNo}`;
-      const res=await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+      const res=await fetch(`https://lotto-today.vercel.app/api/lotto-result?drwNo=${drwNo}`);
       const data=await res.json();
       if(data.returnValue==="success"){
         setWinNums([data.drwtNo1,data.drwtNo2,data.drwtNo3,data.drwtNo4,data.drwtNo5,data.drwtNo6]);
@@ -2926,12 +3069,12 @@ function VaultScreen({saved,onBack}){
     const matchNums=nums.filter(n=>winNums.includes(n));
     const bonusMatch=nums.includes(bonusNum)&&matchNums.length===5;
     const mc=matchNums.length;
-    const rank=mc===6?{r:"1등",c:"#f9d71c",e:"🏆"}
-      :mc===5&&bonusMatch?{r:"2등",c:"#ff9800",e:"🥈"}
-      :mc===5?{r:"3등",c:"#ff7272",e:"🥉"}
-      :mc===4?{r:"4등",c:"#69c8f2",e:"🎉"}
-      :mc===3?{r:"5등",c:"#b0d840",e:"✨"}
-      :{r:"낙첨",c:"#444",e:"😢"};
+    const rank=mc===6?{r:"1등",c:"#f9d71c",e:"🏆",n:1}
+      :mc===5&&bonusMatch?{r:"2등",c:"#ff9800",e:"🥈",n:2}
+      :mc===5?{r:"3등",c:"#ff7272",e:"🥉",n:3}
+      :mc===4?{r:"4등",c:"#69c8f2",e:"🎉",n:4}
+      :mc===3?{r:"5등",c:"#b0d840",e:"✨",n:5}
+      :{r:"낙첨",c:"#444",e:"😢",n:99};
     return{matchNums,bonusMatch,rank,mc};
   };
 
@@ -3029,7 +3172,7 @@ function VaultScreen({saved,onBack}){
                       const val=e.target.value.replace(/\D/g,"").slice(0,2);
                       const next=[...manualWin];next[i]=val;setManualWin(next);
                     }}
-                    maxLength={2} placeholder={`${i+1}`}
+                    maxLength={2} placeholder={`번${i+1}`}
                     style={{width:38,height:38,borderRadius:"50%",textAlign:"center",
                       background:"rgba(255,255,255,0.06)",
                       border:`1px solid ${v?"rgba(249,215,28,0.4)":"rgba(255,255,255,0.1)"}`,
@@ -3154,7 +3297,66 @@ function VaultScreen({saved,onBack}){
           </div>
         )}
 
-        {/* 🏆 자랑하기 */}
+        {/* 💰 실제 수령액 계산기 */}
+        {winNums&&(()=>{
+          const bestRank=saved.reduce((best,s)=>{
+            const r=analyze(s.nums);
+            if(!best||r?.rank?.n<best.n) return{n:r?.rank?.n||99,label:r?.rank?.r||"낙첨",prize:r?.rank?.prize||0};
+            return best;
+          },{n:99,label:"낙첨",prize:0});
+
+          const PRIZES={1:{avg:2000000000,tax:0.44},2:{avg:60000000,tax:0.33},3:{avg:1500000,tax:0},4:{avg:50000,tax:0},5:{avg:5000,tax:0}};
+          const rankNum=bestRank.n;
+          const info=PRIZES[rankNum];
+
+          if(!info||rankNum===99) return null;
+
+          const gross=info.avg;
+          const taxAmt=Math.floor(gross*info.tax);
+          const net=gross-taxAmt;
+
+          const fmt=(n)=>n>=100000000?`${(n/100000000).toFixed(1)}억`:n>=10000?`${(n/10000).toFixed(0)}만원`:`${n.toLocaleString()}원`;
+
+          return(
+            <div style={{...box({marginTop:8,background:"rgba(80,200,120,0.04)",border:"1px solid rgba(80,200,120,0.12)"})}}>
+              <div style={{fontSize:11,color:"#2d8a50",marginBottom:12,fontWeight:700}}>
+                💰 실제 수령액 계산
+              </div>
+              <div style={{fontSize:10,color:"#444",marginBottom:10}}>
+                {bestRank.label} 기준 평균 당첨금으로 계산해요
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+                  padding:"8px 12px",background:"rgba(255,255,255,0.03)",borderRadius:10}}>
+                  <span style={{fontSize:11,color:"#555"}}>총 당첨금 (세전)</span>
+                  <span style={{fontSize:13,fontWeight:700,color:"#fff"}}>{fmt(gross)}</span>
+                </div>
+                {info.tax>0&&(
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+                    padding:"8px 12px",background:"rgba(255,100,100,0.06)",borderRadius:10}}>
+                    <span style={{fontSize:11,color:"#555"}}>세금 ({(info.tax*100).toFixed(0)}%)</span>
+                    <span style={{fontSize:13,fontWeight:700,color:"#ff7272"}}>-{fmt(taxAmt)}</span>
+                  </div>
+                )}
+                {info.tax===0&&(
+                  <div style={{padding:"6px 12px",background:"rgba(80,200,120,0.06)",borderRadius:10}}>
+                    <span style={{fontSize:10,color:"#50c878"}}>✅ 200만원 이하 비과세</span>
+                  </div>
+                )}
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+                  padding:"10px 12px",
+                  background:"linear-gradient(135deg,rgba(80,200,120,0.1),rgba(50,180,100,0.06))",
+                  border:"1px solid rgba(80,200,120,0.2)",borderRadius:10}}>
+                  <span style={{fontSize:12,fontWeight:700,color:"#50c878"}}>실제 수령액</span>
+                  <span style={{fontSize:16,fontWeight:900,color:"#50c878"}}>{fmt(net)}</span>
+                </div>
+                {info.tax>0&&<div style={{fontSize:9,color:"#333",textAlign:"center"}}>
+                  소득세 22% + 지방소득세 2% 적용 기준
+                </div>}
+              </div>
+            </div>
+          );
+        })()}
         {winNums&&(()=>{
           // 이번 주 구입금액
           const thisWeek=new Date();
@@ -3728,34 +3930,50 @@ export default function App(){
   const recommended=DAY_REC[new Date().getDay()];
 
   return(
-    <div style={{...W,display:"flex",flexDirection:"column",alignItems:"center",position:"relative",overflow:"hidden"}}>
+    <div style={{...W,display:"flex",flexDirection:"column",alignItems:"center",
+      position:"relative",overflow:"hidden",
+      background:"radial-gradient(ellipse at 50% 0%,#2a1a4e 0%,#0d0820 60%)"}}>
       <ShareModal data={shareData} onClose={()=>setShareData(null)}/>
 
-      {/* 배경 글로우 */}
-      <div style={{position:"fixed",top:-200,left:"50%",transform:"translateX(-50%)",
-        width:600,height:400,borderRadius:"50%",pointerEvents:"none",zIndex:0,
-        background:"radial-gradient(ellipse,rgba(249,215,28,0.04) 0%,transparent 70%)"}}/>
+      {/* 별 배경 */}
+      {Array.from({length:60},(_,i)=>(
+        <div key={i} style={{position:"fixed",
+          left:`${(i*37+11)%100}%`,top:`${(i*23+7)%80}%`,
+          width:i%7===0?3:i%3===0?2:1,height:i%7===0?3:i%3===0?2:1,
+          borderRadius:"50%",pointerEvents:"none",zIndex:0,
+          background:`rgba(255,255,255,${0.2+((i*7)%10)*0.08})`,
+          animation:`twinkle ${2+i%3}s ease-in-out infinite alternate`,
+        }}/>
+      ))}
+
+      {/* 은하수 글로우 */}
+      <div style={{position:"fixed",top:0,left:0,right:0,height:"50vh",zIndex:0,
+        background:"radial-gradient(ellipse at 30% 20%,rgba(150,100,255,0.15),transparent 60%)",
+        pointerEvents:"none"}}/>
+      <div style={{position:"fixed",top:0,left:0,right:0,height:"40vh",zIndex:0,
+        background:"radial-gradient(ellipse at 70% 30%,rgba(100,150,255,0.1),transparent 50%)",
+        pointerEvents:"none"}}/>
 
       <div style={{width:"100%",maxWidth:420,padding:"0 16px 40px",position:"relative",zIndex:1}}>
 
         {/* 탑바 */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"52px 0 24px"}}>
           <div>
-            <div style={{fontSize:22,fontWeight:900,letterSpacing:-0.5,
-              background:"linear-gradient(90deg,#f9d71c,#ff9800)",
+            <div style={{fontSize:26,fontWeight:900,letterSpacing:-0.5,
+              background:"linear-gradient(90deg,#f5e6c8,#ffd700)",
               WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
               오늘의 행운
             </div>
-            <div style={{fontSize:11,color:"#333",marginTop:2,letterSpacing:2}}>{today}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,0.3)",marginTop:2,letterSpacing:2}}>{today}</div>
           </div>
           <div style={{display:"flex",gap:8}}>
             <button onClick={()=>setScreen("vault")} style={{
-              width:36,height:36,borderRadius:"50%",cursor:"pointer",
-              background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",
+              width:38,height:38,borderRadius:"50%",cursor:"pointer",
+              background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",
               display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>📁</button>
             <button onClick={()=>setScreen("profile")} style={{
-              width:36,height:36,borderRadius:"50%",cursor:"pointer",
-              background:"rgba(249,215,28,0.08)",border:"1px solid rgba(249,215,28,0.2)",
+              width:38,height:38,borderRadius:"50%",cursor:"pointer",
+              background:"rgba(249,215,28,0.1)",border:"1px solid rgba(249,215,28,0.25)",
               display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>
               {profile?zodiacEm:"🍀"}
             </button>
@@ -3764,155 +3982,133 @@ export default function App(){
 
         {/* 카운트다운 */}
         <div style={{
-          background:cd.urgent?"rgba(255,70,70,0.08)":"linear-gradient(135deg,rgba(249,215,28,0.06),rgba(255,150,0,0.04))",
-          border:`1px solid ${cd.urgent?"rgba(255,70,70,0.3)":"rgba(249,215,28,0.12)"}`,
-          borderRadius:24,padding:"20px 22px",marginBottom:12,
+          background:cd.urgent?"rgba(255,70,70,0.08)":"linear-gradient(135deg,rgba(255,215,0,0.08),rgba(255,165,0,0.04))",
+          border:`1px solid ${cd.urgent?"rgba(255,70,70,0.3)":"rgba(255,215,0,0.2)"}`,
+          borderRadius:24,padding:"18px 20px",marginBottom:14,
+          boxShadow:cd.vurgent?"0 0 30px rgba(255,70,70,0.15)":"0 0 40px rgba(255,215,0,0.05)",
           position:"relative",overflow:"hidden",
-          boxShadow:cd.vurgent?"0 0 30px rgba(255,70,70,0.15)":"none",transition:"all .5s",
         }}>
-          <div style={{position:"absolute",right:-20,top:-20,fontSize:80,opacity:0.04,pointerEvents:"none"}}>🎰</div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
-            <div>
-              <div style={{fontSize:10,color:cd.urgent?"#ff7070":"#664400",fontWeight:700,letterSpacing:2,marginBottom:8}}>
-                🎰 제{cd.drwNo}회 마감까지
-              </div>
-              <div style={{display:"flex",alignItems:"baseline",gap:3}}>
-                {cd.days>0&&(<>
-                  <span style={{fontSize:44,fontWeight:900,lineHeight:1,fontFamily:"monospace",
-                    color:cd.urgent?"#ff6b6b":"#f9d71c",
-                    textShadow:cd.urgent?"0 0 20px rgba(255,107,107,0.5)":"0 0 20px rgba(249,215,28,0.3)"}}>
-                    {cd.days}
-                  </span>
-                  <span style={{fontSize:12,color:"#555",marginRight:8}}>일</span>
-                </>)}
-                <span style={{fontSize:44,fontWeight:900,lineHeight:1,fontFamily:"monospace",
-                  color:cd.urgent?"#ff6b6b":"#f9d71c"}}>{num(cd.hours)}</span>
-                <span style={{fontSize:12,color:"#555"}}>시</span>
-                <span style={{fontSize:44,fontWeight:900,lineHeight:1,fontFamily:"monospace",
-                  color:cd.urgent?"#ff6b6b":"#f9d71c"}}>{num(cd.mins)}</span>
-                <span style={{fontSize:12,color:"#555"}}>분</span>
-                <span style={{fontSize:44,fontWeight:900,lineHeight:1,fontFamily:"monospace",transition:"color .3s",
-                  color:cd.vurgent?(cdBlink?"#ff4444":"#ff9999"):cd.urgent?"#ff6b6b":"#f9d71c",
-                  textShadow:cd.urgent?"0 0 20px rgba(255,107,107,0.5)":"0 0 20px rgba(249,215,28,0.3)"}}>
-                  {num(cd.secs)}
-                </span>
-                <span style={{fontSize:12,color:"#555"}}>초</span>
-              </div>
-            </div>
-            <div style={{textAlign:"right",paddingTop:4}}>
-              <div style={{fontSize:9,color:"#444",marginBottom:2}}>매주 토요일</div>
-              <div style={{fontSize:12,fontWeight:700,color:"#555"}}>오후 8:00</div>
-              {cd.urgent&&<div style={{marginTop:6,fontSize:10,fontWeight:700,
-                color:cdBlink?"#ff6b6b":"#ff9999",transition:"color .3s"}}>⚡ 서두르세요!</div>}
-            </div>
+          <div style={{position:"absolute",right:-20,top:-20,
+            width:120,height:120,borderRadius:"50%",
+            background:"radial-gradient(circle,rgba(255,215,0,0.06),transparent)",
+            pointerEvents:"none"}}/>
+          <div style={{fontSize:10,color:cd.urgent?"rgba(255,100,100,0.8)":"rgba(255,215,0,0.6)",
+            fontWeight:700,letterSpacing:2,marginBottom:12}}>
+            🎰 제{cd.drwNo}회 마감까지
           </div>
-          <div style={{height:3,background:"rgba(255,255,255,0.04)",borderRadius:99,overflow:"hidden"}}>
-            <div style={{height:"100%",borderRadius:99,width:`${cd.pct}%`,transition:"width 1s linear",
-              background:cd.urgent?"linear-gradient(90deg,#ff4444,#ff9800)":"linear-gradient(90deg,#c8a800,#f9d71c,#ff9800)",
-              boxShadow:cd.urgent?"0 0 8px rgba(255,68,68,0.6)":"0 0 8px rgba(249,215,28,0.4)"}}/>
+          <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:12}}>
+            {[[cd.days,"일"],[cd.hours,"시"],[cd.mins,"분"],[cd.secs,"초"]].map(([v,u],i)=>(
+              <div key={i} style={{display:"flex",alignItems:"baseline",gap:2}}>
+                <span style={{
+                  fontSize:i===0?50:42,fontWeight:900,lineHeight:1,
+                  background:cd.urgent?"linear-gradient(180deg,#ff6464,#ff3232)":"linear-gradient(180deg,#fff 0%,#ffd700 100%)",
+                  WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",
+                  fontVariantNumeric:"tabular-nums",
+                  filter:`drop-shadow(0 0 8px ${cd.urgent?"rgba(255,70,70,0.4)":"rgba(255,215,0,0.4)"})`,
+                  animation:cd.vurgent&&i===3?"blink 0.5s ease-in-out infinite":"none",
+                }}>{num(v)}</span>
+                <span style={{fontSize:10,color:cd.urgent?"rgba(255,100,100,0.5)":"rgba(255,215,0,0.5)",marginRight:6}}>{u}</span>
+              </div>
+            ))}
           </div>
-          <div style={{display:"flex",justifyContent:"space-between",marginTop:5}}>
-            <span style={{fontSize:9,color:"#2a2a2a"}}>월요일</span>
-            <span style={{fontSize:9,color:"#2a2a2a"}}>토 오후 8시</span>
+          <div style={{height:2,background:"rgba(255,255,255,0.05)",borderRadius:1,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${cd.pct}%`,
+              background:cd.urgent?"linear-gradient(90deg,#ff3232,#ff6464)":"linear-gradient(90deg,#c8a800,#ffd700)",
+              borderRadius:1,transition:"width 1s linear"}}/>
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",marginTop:8}}>
+            <span style={{fontSize:10,color:"rgba(255,255,255,0.2)"}}>
+              {["일","월","화","수","목","금","토"][new Date().getDay()]}요일
+            </span>
+            <span style={{fontSize:10,color:"rgba(255,255,255,0.2)"}}>매주 토 오후 8시</span>
           </div>
         </div>
 
-        {/* 오늘의 추천 + 마지막 번호 2분할 */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+        {/* 추천 + 마지막번호 */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
           <button onClick={()=>{SFX.pop();setScreen(recommended.id);}} style={{
-            background:"linear-gradient(135deg,rgba(192,132,252,0.08),rgba(139,92,246,0.04))",
-            border:"1px solid rgba(192,132,252,0.15)",
-            borderRadius:20,padding:"16px 14px",cursor:"pointer",textAlign:"left",
-            position:"relative",overflow:"hidden"}}>
-            <div style={{position:"absolute",right:-8,bottom:-8,fontSize:48,opacity:0.06,pointerEvents:"none"}}>
-              {recommended.em}
-            </div>
-            <div style={{fontSize:9,color:"rgba(192,132,252,0.6)",letterSpacing:2,marginBottom:8,fontWeight:700}}>
-              오늘의 추천
-            </div>
-            <div style={{height:44,marginBottom:8,display:"flex",alignItems:"center"}}>
-              {MENU_LOTTIE[recommended.id]?(
-                <Player autoplay loop src={MENU_LOTTIE[recommended.id]} style={{width:44,height:44}}
-                  {...(recommended.id==="wheel"?{background:"transparent"}:{})}/>
-              ):(
-                <span style={{fontSize:26}}>{recommended.em}</span>
-              )}
-            </div>
-            <div style={{fontSize:13,fontWeight:900,color:"#c084fc",marginBottom:3,lineHeight:1.2}}>
-              {recommended.title}
-            </div>
-            <div style={{fontSize:10,color:"#555",lineHeight:1.4}}>
-              {recommended.sub}<br/>번호를 뽑아요
-            </div>
-            <div style={{position:"absolute",bottom:12,right:14,fontSize:14,color:"rgba(192,132,252,0.4)"}}>›</div>
+            background:"linear-gradient(135deg,rgba(255,150,80,0.15),rgba(255,100,50,0.08))",
+            border:"1px solid rgba(255,150,80,0.2)",borderRadius:20,padding:"14px 12px",
+            cursor:"pointer",textAlign:"left",minHeight:120}}>
+            <div style={{fontSize:9,color:"rgba(255,150,80,0.6)",fontWeight:700,letterSpacing:1,marginBottom:8}}>오늘의 추천</div>
+            <div style={{fontSize:34,marginBottom:8}}>{recommended.em}</div>
+            <div style={{fontSize:13,fontWeight:900,color:"#fff",marginBottom:3}}>{recommended.title}</div>
+            <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",lineHeight:1.4}}>{recommended.sub}번호를 뽑아요</div>
           </button>
-
-          <button onClick={()=>setScreen("vault")} style={{
-            background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",
-            borderRadius:20,padding:"16px 14px",cursor:"pointer",textAlign:"left"}}>
-            <div style={{fontSize:9,color:"#333",letterSpacing:2,marginBottom:8,fontWeight:700}}>마지막 번호</div>
+          <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",
+            borderRadius:20,padding:"14px 12px",minHeight:120}}>
+            <div style={{fontSize:9,color:"rgba(255,255,255,0.3)",fontWeight:700,letterSpacing:1,marginBottom:8}}>마지막 번호</div>
             {lastSaved?(
               <>
-                <div style={{fontSize:11,color:"#69c8f2",fontWeight:700,marginBottom:10}}>
-                  {lastSaved.mode}
-                </div>
-                <div style={{display:"flex",gap:3,marginBottom:8,flexWrap:"wrap"}}>
+                <div style={{display:"flex",gap:3,flexWrap:"wrap",marginBottom:6}}>
                   {lastSaved.nums.map((n,i)=>{const c=ballColor(n);return(
                     <div key={i} style={{width:24,height:24,borderRadius:"50%",
-                      background:`radial-gradient(circle at 35% 35%,${c.bg}cc,${c.bg})`,
+                      background:`radial-gradient(circle at 35% 35%,${c.bg}dd,${c.bg})`,
                       display:"flex",alignItems:"center",justifyContent:"center",
-                      fontSize:8,fontWeight:900,color:c.text}}>{n}</div>
+                      fontSize:9,fontWeight:900,color:c.text}}>{n}</div>
                   );})}
                 </div>
-                {lastSaved.wish&&(
-                  <div style={{fontSize:10,color:"#664400"}}>
-                    {lastSaved.wish.em} {lastSaved.wish.label}
-                  </div>
-                )}
+                {lastSaved.wish&&<div style={{fontSize:9,color:"rgba(255,255,255,0.3)"}}>
+                  {lastSaved.wish.em} {lastSaved.wish.label}
+                </div>}
               </>
             ):(
-              <div style={{fontSize:11,color:"#2a2a2a",marginTop:16}}>저장된 번호가 없어요</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,0.2)",marginTop:20}}>저장된 번호가 없어요</div>
             )}
-          </button>
+          </div>
         </div>
 
         {/* 구분선 */}
-        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-          <div style={{flex:1,height:1,background:"rgba(255,255,255,0.04)"}}/>
-          <span style={{fontSize:10,color:"#2a2a2a",letterSpacing:2}}>번호 뽑기</span>
-          <div style={{flex:1,height:1,background:"rgba(255,255,255,0.04)"}}/>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+          <div style={{flex:1,height:1,background:"rgba(255,255,255,0.06)"}}/>
+          <span style={{fontSize:10,color:"rgba(255,255,255,0.25)",letterSpacing:3}}>번호 뽑기</span>
+          <div style={{flex:1,height:1,background:"rgba(255,255,255,0.06)"}}/>
         </div>
 
-        {/* 메뉴 그리드 2열 */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+        {/* 메뉴 그리드 V1 스타일 */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
           {MENUS.map((m)=>(
             <button key={m.id} onClick={()=>{SFX.pop();setScreen(m.id);}} style={{
-              background:"rgba(255,255,255,0.02)",
-              border:"1px solid rgba(255,255,255,0.05)",
-              borderRadius:18,padding:"16px 14px",
+              background:"rgba(255,255,255,0.04)",
+              border:"1px solid rgba(255,255,255,0.08)",
+              borderRadius:20,padding:"16px 14px",
               display:"flex",flexDirection:"column",gap:10,
-              cursor:"pointer",textAlign:"left",transition:"all .2s",
+              cursor:"pointer",textAlign:"left",minHeight:120,
+              position:"relative",overflow:"hidden",transition:"all .2s",
             }}>
-              <div style={{width:44,height:44,borderRadius:12,
-                background:`${m.tc}18`,border:`1px solid ${m.tc}33`,
-                display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+              <div style={{position:"absolute",top:-20,right:-20,
+                width:80,height:80,borderRadius:"50%",
+                background:`radial-gradient(circle,${m.tc}22,transparent)`,
+                pointerEvents:"none"}}/>
+              <div style={{
+                width:50,height:50,borderRadius:16,
+                background:`linear-gradient(135deg,${m.tc}cc,${m.tc}88)`,
+                display:"flex",alignItems:"center",justifyContent:"center",
+                overflow:"hidden",
+                boxShadow:`0 4px 16px ${m.tc}44`
+              }}>
                 {MENU_LOTTIE[m.id]?(
-                  <Player autoplay loop src={MENU_LOTTIE[m.id]} style={{width:38,height:38}}
+                  <Player autoplay loop src={MENU_LOTTIE[m.id]}
+                    style={{width:38,height:38}}
                     {...(m.id==="wheel"?{background:"transparent"}:{})}/>
                 ):(
-                  <span style={{fontSize:22}}>{m.em}</span>
+                  <span style={{fontSize:24}}>{m.em}</span>
                 )}
               </div>
               <div>
-                <div style={{fontSize:12,fontWeight:900,color:m.tc,lineHeight:1.2,marginBottom:3}}>
+                <div style={{fontSize:12,fontWeight:900,color:"#fff",lineHeight:1.2,marginBottom:3}}>
                   {m.title}
                 </div>
-                <div style={{fontSize:9,color:"#333",lineHeight:1.4}}>{m.sub}</div>
+                <div style={{fontSize:9,color:"rgba(255,255,255,0.35)",lineHeight:1.4}}>{m.sub}</div>
               </div>
             </button>
           ))}
         </div>
       </div>
+      <style>{`
+        @keyframes twinkle{from{opacity:0.2}to{opacity:1}}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+      `}</style>
     </div>
   );
 }
