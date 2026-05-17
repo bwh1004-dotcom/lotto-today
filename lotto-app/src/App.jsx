@@ -3707,14 +3707,14 @@ export default function App(){
   // ══ HOME ═══════════════════════════════════════════════════
   const lastSaved=saved.length>0?saved[0]:null;
   const MENUS=[
-    {id:"today",    em:"🌅",title:"오늘의 하루",  tc:"#f9d71c",accent:"#f9d71c22",grad:"linear-gradient(135deg,rgba(249,215,28,0.22),rgba(255,152,0,0.10))",sub:"기분·날씨·걸음수로 번호 뽑기"},
-    {id:"location", em:"📍",title:"우리동네 명당", tc:"#ff9800",accent:"#ff980022",grad:"linear-gradient(135deg,rgba(255,152,0,0.22),rgba(255,87,34,0.10))",sub:"GPS 기준 명당 좌표로 번호 추출"},
-    {id:"dream",    em:"🌙",title:"꿈해몽",        tc:"#c084fc",accent:"#c084fc22",grad:"linear-gradient(135deg,rgba(192,132,252,0.22),rgba(107,70,193,0.10))",sub:"꿈 키워드 + 역대 당첨 빈도 조합"},
-    {id:"fortune",  em:"⭐",title:"오늘의 운세",   tc:"#a78bfa",accent:"#a78bfa22",grad:"linear-gradient(135deg,rgba(167,139,250,0.22),rgba(99,102,241,0.10))",sub:"지금 이 순간의 시각·날짜로 번호"},
-    {id:"wheel",    em:"🎡",title:"행운의 휠",     tc:"#f9d71c",accent:"#f9d71c22",grad:"linear-gradient(135deg,rgba(249,215,28,0.22),rgba(255,107,107,0.10))",sub:"6번 스핀 → 번호 추출"},
-    {id:"slot",     em:"🏢",title:"아파트불빛",    tc:"#69c8f2",accent:"#69c8f222",grad:"linear-gradient(135deg,rgba(105,200,242,0.22),rgba(76,175,255,0.10))",sub:"아파트 구매 후 홈파티로 번호 뽑기"},
-    {id:"formula",  em:"🎂",title:"가족의행운",    tc:"#69c8f2",accent:"#69c8f222",grad:"linear-gradient(135deg,rgba(240,98,146,0.22),rgba(105,200,242,0.10))",sub:"가족 생년월일로 번호를 뽑아요"},
-    {id:"favorites",em:"💛",title:"선호번호",      tc:"#f9d71c",accent:"#f9d71c22",grad:"linear-gradient(135deg,rgba(249,215,28,0.22),rgba(255,193,7,0.10))",sub:"평생번호 + 오늘의 선택번호"},
+    {id:"today",    em:"🌅",title:"오늘의 하루",  tc:"#f9d71c",accent:"#f9d71c22",sub:"기분·날씨·걸음수로 번호 뽑기"},
+    {id:"location", em:"📍",title:"우리동네 명당", tc:"#ff9800",accent:"#ff980022",sub:"GPS 기준 명당 좌표로 번호 추출"},
+    {id:"dream",    em:"🌙",title:"꿈해몽",        tc:"#c084fc",accent:"#c084fc22",sub:"꿈 키워드 + 역대 당첨 빈도 조합"},
+    {id:"fortune",  em:"⭐",title:"오늘의 운세",   tc:"#a78bfa",accent:"#a78bfa22",sub:"지금 이 순간의 시각·날짜로 번호"},
+    {id:"wheel",    em:"🎡",title:"행운의 휠",     tc:"#f9d71c",accent:"#f9d71c22",sub:"6번 스핀 → 번호 추출"},
+    {id:"slot",     em:"🏢",title:"아파트불빛",    tc:"#69c8f2",accent:"#69c8f222",sub:"아파트 구매 후 홈파티로 번호 뽑기"},
+    {id:"formula",  em:"🎂",title:"가족의행운",    tc:"#69c8f2",accent:"#69c8f222",sub:"가족 생년월일로 번호를 뽑아요"},
+    {id:"favorites",em:"💛",title:"선호번호",      tc:"#f9d71c",accent:"#f9d71c22",sub:"평생번호 + 오늘의 선택번호"},
   ];
   const DAY_REC=[
     {em:"🌅",title:"오늘의 하루",  id:"today",   sub:"오늘 하루를 기록해서"},
@@ -3894,7 +3894,7 @@ export default function App(){
               cursor:"pointer",textAlign:"left",transition:"all .2s",
             }}>
               <div style={{width:44,height:44,borderRadius:12,
-                background:m.grad,border:`1px solid ${m.tc}33`,
+                background:`${m.tc}18`,border:`1px solid ${m.tc}33`,
                 display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
                 {MENU_LOTTIE[m.id]?(
                   <Player autoplay loop src={MENU_LOTTIE[m.id]} style={{width:38,height:38}}
