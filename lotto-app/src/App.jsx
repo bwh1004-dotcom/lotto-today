@@ -1,4 +1,18 @@
 import { useState, useEffect, useRef } from "react";
+import { Player } from "@lottiefiles/react-lottie-player";
+import lottieToday from "./assets/lottie/today.json";
+import lottieLocation from "./assets/lottie/location.json";
+import lottieDream from "./assets/lottie/dream.json";
+import lottieFortune from "./assets/lottie/fortune.json";
+import lottieWheel from "./assets/lottie/wheel.json";
+import lottieSlot from "./assets/lottie/slot.json";
+import lottieFormula from "./assets/lottie/formula.json";
+import lottieFavorites from "./assets/lottie/favorites.json";
+
+const MENU_LOTTIE = {
+  today: lottieToday, location: lottieLocation, dream: lottieDream, fortune: lottieFortune,
+  wheel: lottieWheel, slot: lottieSlot, formula: lottieFormula, favorites: lottieFavorites,
+};
 
 // ════════════════════════════════════════════════════════════
 // 데이터
