@@ -3707,258 +3707,212 @@ export default function App(){
   // ══ HOME ═══════════════════════════════════════════════════
   const lastSaved=saved.length>0?saved[0]:null;
   const MENUS=[
-    {id:"today",    em:"🌅",title:"오늘의 하루",  tc:"#ff7b35",sub:"기분·날씨·걸음수로 번호 뽑기",
-     grad:"linear-gradient(135deg,#ff9a6c,#ff6b35)", shadow:"rgba(255,107,53,0.35)"},
-    {id:"location", em:"📍",title:"우리동네 명당", tc:"#4b7fff",sub:"GPS 기준 명당 좌표로 번호 추출",
-     grad:"linear-gradient(135deg,#6c9fff,#4b7fff)", shadow:"rgba(75,127,255,0.35)"},
-    {id:"dream",    em:"🌙",title:"꿈해몽",        tc:"#b06cff",sub:"꿈 키워드 + 역대 당첨 빈도 조합",
-     grad:"linear-gradient(135deg,#b06cff,#8b3fff)", shadow:"rgba(139,63,255,0.35)"},
-    {id:"fortune",  em:"⭐",title:"오늘의 운세",   tc:"#ffaa00",sub:"지금 이 순간의 시각·날짜로 번호",
-     grad:"linear-gradient(135deg,#ffcf6c,#ffaa00)", shadow:"rgba(255,170,0,0.35)"},
-    {id:"wheel",    em:"🎡",title:"행운의 휠",     tc:"#ff3d7f",sub:"6번 스핀 → 번호 추출",
-     grad:"linear-gradient(135deg,#ff6ca0,#ff3d7f)", shadow:"rgba(255,61,127,0.35)"},
-    {id:"slot",     em:"🏢",title:"아파트불빛",    tc:"#00d4aa",sub:"아파트 구매 후 홈파티로 번호 뽑기",
-     grad:"linear-gradient(135deg,#6cffe0,#00d4aa)", shadow:"rgba(0,212,170,0.35)"},
-    {id:"formula",  em:"🎂",title:"가족의행운",    tc:"#ff7eb3",sub:"가족 생년월일로 번호를 뽑아요",
-     grad:"linear-gradient(135deg,#ff9ec7,#ff5a93)", shadow:"rgba(255,90,147,0.35)"},
-    {id:"favorites",em:"💛",title:"선호번호",      tc:"#ffd700",sub:"평생번호 + 오늘의 선택번호",
-     grad:"linear-gradient(135deg,#ffe066,#ffb700)", shadow:"rgba(255,183,0,0.35)"},
+    {id:"today",    em:"🌅",title:"오늘의 하루",  tc:"#f9d71c",accent:"#f9d71c22",grad:"linear-gradient(135deg,rgba(249,215,28,0.22),rgba(255,152,0,0.10))",sub:"기분·날씨·걸음수로 번호 뽑기"},
+    {id:"location", em:"📍",title:"우리동네 명당", tc:"#ff9800",accent:"#ff980022",grad:"linear-gradient(135deg,rgba(255,152,0,0.22),rgba(255,87,34,0.10))",sub:"GPS 기준 명당 좌표로 번호 추출"},
+    {id:"dream",    em:"🌙",title:"꿈해몽",        tc:"#c084fc",accent:"#c084fc22",grad:"linear-gradient(135deg,rgba(192,132,252,0.22),rgba(107,70,193,0.10))",sub:"꿈 키워드 + 역대 당첨 빈도 조합"},
+    {id:"fortune",  em:"⭐",title:"오늘의 운세",   tc:"#a78bfa",accent:"#a78bfa22",grad:"linear-gradient(135deg,rgba(167,139,250,0.22),rgba(99,102,241,0.10))",sub:"지금 이 순간의 시각·날짜로 번호"},
+    {id:"wheel",    em:"🎡",title:"행운의 휠",     tc:"#f9d71c",accent:"#f9d71c22",grad:"linear-gradient(135deg,rgba(249,215,28,0.22),rgba(255,107,107,0.10))",sub:"6번 스핀 → 번호 추출"},
+    {id:"slot",     em:"🏢",title:"아파트불빛",    tc:"#69c8f2",accent:"#69c8f222",grad:"linear-gradient(135deg,rgba(105,200,242,0.22),rgba(76,175,255,0.10))",sub:"아파트 구매 후 홈파티로 번호 뽑기"},
+    {id:"formula",  em:"🎂",title:"가족의행운",    tc:"#69c8f2",accent:"#69c8f222",grad:"linear-gradient(135deg,rgba(240,98,146,0.22),rgba(105,200,242,0.10))",sub:"가족 생년월일로 번호를 뽑아요"},
+    {id:"favorites",em:"💛",title:"선호번호",      tc:"#f9d71c",accent:"#f9d71c22",grad:"linear-gradient(135deg,rgba(249,215,28,0.22),rgba(255,193,7,0.10))",sub:"평생번호 + 오늘의 선택번호"},
   ];
   const DAY_REC=[
-    {id:"today",   sub:"오늘 하루를 기록해서"},
-    {id:"location",sub:"내 주변 명당의 기운을"},
-    {id:"dream",   sub:"어젯밤 꿈으로"},
-    {id:"fortune", sub:"지금 이 순간의 운세를"},
-    {id:"wheel",   sub:"휠을 돌려서"},
-    {id:"slot",    sub:"내 집 마련의 꿈으로"},
-    {id:"formula", sub:"가족과 함께하는"},
+    {em:"🌅",title:"오늘의 하루",  id:"today",   sub:"오늘 하루를 기록해서"},
+    {em:"📍",title:"우리동네 명당",id:"location",sub:"내 주변 명당의 기운을"},
+    {em:"🌙",title:"꿈해몽",       id:"dream",   sub:"어젯밤 꿈으로"},
+    {em:"⭐",title:"오늘의 운세",  id:"fortune", sub:"지금 이 순간의 운세를"},
+    {em:"🎡",title:"행운의 휠",    id:"wheel",   sub:"휠을 돌려서"},
+    {em:"🏢",title:"아파트불빛",   id:"slot",    sub:"내 집 마련의 꿈으로"},
+    {em:"🎂",title:"가족의행운",   id:"formula", sub:"가족과 함께하는"},
   ];
-  const recDay=DAY_REC[new Date().getDay()];
-  const recMenu=MENUS.find(m=>m.id===recDay.id)||MENUS[0];
+  const recommended=DAY_REC[new Date().getDay()];
 
   return(
-    <div style={{...W,
-      background:"radial-gradient(ellipse at 50% 0%,#2a1a4e 0%,#0d0820 60%)",
-      display:"flex",flexDirection:"column",alignItems:"center",position:"relative",overflow:"hidden"}}>
+    <div style={{...W,display:"flex",flexDirection:"column",alignItems:"center",position:"relative",overflow:"hidden"}}>
       <ShareModal data={shareData} onClose={()=>setShareData(null)}/>
 
-      {/* 별 */}
-      {Array.from({length:60},(_,i)=>(
-        <div key={i} style={{
-          position:"fixed",
-          left:`${(i*37+11)%100}%`,top:`${(i*23+7)%80}%`,
-          width:i%7===0?3:i%3===0?2:1,
-          height:i%7===0?3:i%3===0?2:1,
-          borderRadius:"50%",
-          background:`rgba(255,255,255,${0.2+((i*7)%10)*0.08})`,
-          pointerEvents:"none",zIndex:0,
-          animation:`twinkleHome ${2+i%3}s ease-in-out infinite alternate`,
-        }}/>
-      ))}
-
-      {/* 은하수 */}
-      <div style={{position:"fixed",top:0,left:0,right:0,height:"50vh",zIndex:0,
-        background:"radial-gradient(ellipse at 30% 20%,rgba(150,100,255,0.15),transparent 60%)",
-        pointerEvents:"none"}}/>
-      <div style={{position:"fixed",top:0,left:0,right:0,height:"40vh",zIndex:0,
-        background:"radial-gradient(ellipse at 70% 30%,rgba(100,150,255,0.10),transparent 50%)",
-        pointerEvents:"none"}}/>
+      {/* 배경 글로우 */}
+      <div style={{position:"fixed",top:-200,left:"50%",transform:"translateX(-50%)",
+        width:600,height:400,borderRadius:"50%",pointerEvents:"none",zIndex:0,
+        background:"radial-gradient(ellipse,rgba(249,215,28,0.04) 0%,transparent 70%)"}}/>
 
       <div style={{width:"100%",maxWidth:420,padding:"0 16px 40px",position:"relative",zIndex:1}}>
 
-        {/* 헤더 */}
-        <div style={{padding:"52px 4px 20px"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div>
-              <div style={{fontSize:26,fontWeight:900,letterSpacing:-0.5,
-                background:"linear-gradient(90deg,#f5e6c8,#ffd700)",
-                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
-                오늘의 행운
-              </div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,0.3)",marginTop:2,letterSpacing:2}}>
-                {today}
-              </div>
+        {/* 탑바 */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"52px 0 24px"}}>
+          <div>
+            <div style={{fontSize:22,fontWeight:900,letterSpacing:-0.5,
+              background:"linear-gradient(90deg,#f9d71c,#ff9800)",
+              WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
+              오늘의 행운
             </div>
-            <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>setScreen("vault")} style={{
-                width:38,height:38,borderRadius:"50%",cursor:"pointer",
-                background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",
-                display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,color:"#fff"}}>📁</button>
-              <button onClick={()=>setScreen("profile")} style={{
-                width:38,height:38,borderRadius:"50%",cursor:"pointer",
-                background:"rgba(255,215,0,0.10)",border:"1px solid rgba(255,215,0,0.25)",
-                display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,color:"#fff"}}>
-                {profile?zodiacEm:"🍀"}
-              </button>
-            </div>
+            <div style={{fontSize:11,color:"#333",marginTop:2,letterSpacing:2}}>{today}</div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={()=>setScreen("vault")} style={{
+              width:36,height:36,borderRadius:"50%",cursor:"pointer",
+              background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",
+              display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>📁</button>
+            <button onClick={()=>setScreen("profile")} style={{
+              width:36,height:36,borderRadius:"50%",cursor:"pointer",
+              background:"rgba(249,215,28,0.08)",border:"1px solid rgba(249,215,28,0.2)",
+              display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>
+              {profile?zodiacEm:"🍀"}
+            </button>
           </div>
         </div>
 
         {/* 카운트다운 */}
         <div style={{
-          background:cd.urgent
-            ?"linear-gradient(135deg,rgba(255,70,70,0.12),rgba(255,107,53,0.06))"
-            :"linear-gradient(135deg,rgba(255,215,0,0.08),rgba(255,165,0,0.04))",
-          border:`1px solid ${cd.urgent?"rgba(255,70,70,0.35)":"rgba(255,215,0,0.2)"}`,
-          borderRadius:24,padding:"18px 20px",marginBottom:14,
-          boxShadow:cd.vurgent
-            ?"0 0 40px rgba(255,70,70,0.18)"
-            :"0 0 40px rgba(255,215,0,0.05)",
-          position:"relative",overflow:"hidden",transition:"all .5s",
+          background:cd.urgent?"rgba(255,70,70,0.08)":"linear-gradient(135deg,rgba(249,215,28,0.06),rgba(255,150,0,0.04))",
+          border:`1px solid ${cd.urgent?"rgba(255,70,70,0.3)":"rgba(249,215,28,0.12)"}`,
+          borderRadius:24,padding:"20px 22px",marginBottom:12,
+          position:"relative",overflow:"hidden",
+          boxShadow:cd.vurgent?"0 0 30px rgba(255,70,70,0.15)":"none",transition:"all .5s",
         }}>
-          <div style={{position:"absolute",right:-20,top:-20,width:120,height:120,borderRadius:"50%",
-            background:cd.urgent
-              ?"radial-gradient(circle,rgba(255,107,107,0.10),transparent)"
-              :"radial-gradient(circle,rgba(255,215,0,0.06),transparent)",
-            pointerEvents:"none"}}/>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-            <div style={{fontSize:10,color:cd.urgent?"rgba(255,107,107,0.85)":"rgba(255,215,0,0.6)",
-              fontWeight:700,letterSpacing:2}}>
-              🎰 제{cd.drwNo}회 마감까지
+          <div style={{position:"absolute",right:-20,top:-20,fontSize:80,opacity:0.04,pointerEvents:"none"}}>🎰</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+            <div>
+              <div style={{fontSize:10,color:cd.urgent?"#ff7070":"#664400",fontWeight:700,letterSpacing:2,marginBottom:8}}>
+                🎰 제{cd.drwNo}회 마감까지
+              </div>
+              <div style={{display:"flex",alignItems:"baseline",gap:3}}>
+                {cd.days>0&&(<>
+                  <span style={{fontSize:44,fontWeight:900,lineHeight:1,fontFamily:"monospace",
+                    color:cd.urgent?"#ff6b6b":"#f9d71c",
+                    textShadow:cd.urgent?"0 0 20px rgba(255,107,107,0.5)":"0 0 20px rgba(249,215,28,0.3)"}}>
+                    {cd.days}
+                  </span>
+                  <span style={{fontSize:12,color:"#555",marginRight:8}}>일</span>
+                </>)}
+                <span style={{fontSize:44,fontWeight:900,lineHeight:1,fontFamily:"monospace",
+                  color:cd.urgent?"#ff6b6b":"#f9d71c"}}>{num(cd.hours)}</span>
+                <span style={{fontSize:12,color:"#555"}}>시</span>
+                <span style={{fontSize:44,fontWeight:900,lineHeight:1,fontFamily:"monospace",
+                  color:cd.urgent?"#ff6b6b":"#f9d71c"}}>{num(cd.mins)}</span>
+                <span style={{fontSize:12,color:"#555"}}>분</span>
+                <span style={{fontSize:44,fontWeight:900,lineHeight:1,fontFamily:"monospace",transition:"color .3s",
+                  color:cd.vurgent?(cdBlink?"#ff4444":"#ff9999"):cd.urgent?"#ff6b6b":"#f9d71c",
+                  textShadow:cd.urgent?"0 0 20px rgba(255,107,107,0.5)":"0 0 20px rgba(249,215,28,0.3)"}}>
+                  {num(cd.secs)}
+                </span>
+                <span style={{fontSize:12,color:"#555"}}>초</span>
+              </div>
             </div>
-            {cd.urgent&&(
-              <div style={{fontSize:10,fontWeight:700,
-                color:cdBlink?"#ff6b6b":"#ff9999",transition:"color .3s"}}>⚡ 서두르세요!</div>
-            )}
+            <div style={{textAlign:"right",paddingTop:4}}>
+              <div style={{fontSize:9,color:"#444",marginBottom:2}}>매주 토요일</div>
+              <div style={{fontSize:12,fontWeight:700,color:"#555"}}>오후 8:00</div>
+              {cd.urgent&&<div style={{marginTop:6,fontSize:10,fontWeight:700,
+                color:cdBlink?"#ff6b6b":"#ff9999",transition:"color .3s"}}>⚡ 서두르세요!</div>}
+            </div>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:12}}>
-            {[[cd.days,"일"],[cd.hours,"시"],[cd.mins,"분"],[cd.secs,"초"]].map(([v,u],i)=>{
-              const isLast=i===3;
-              const blinkRed=isLast&&cd.vurgent&&!cdBlink;
-              return(
-                <div key={i} style={{display:"flex",alignItems:"baseline",gap:2}}>
-                  <span style={{
-                    fontSize:i===0?50:42,fontWeight:900,lineHeight:1,
-                    background:cd.urgent
-                      ?(blinkRed?"linear-gradient(180deg,#fff 0%,#ff9999 100%)":"linear-gradient(180deg,#fff 0%,#ff6b6b 100%)")
-                      :"linear-gradient(180deg,#fff 0%,#ffd700 100%)",
-                    WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",
-                    fontVariantNumeric:"tabular-nums",
-                    filter:cd.urgent?"drop-shadow(0 0 8px rgba(255,107,107,0.45))":"drop-shadow(0 0 8px rgba(255,215,0,0.4))",
-                    transition:"filter .3s",
-                  }}>{num(v)}</span>
-                  <span style={{fontSize:10,color:cd.urgent?"rgba(255,107,107,0.5)":"rgba(255,215,0,0.5)",marginRight:6}}>{u}</span>
-                </div>
-              );
-            })}
+          <div style={{height:3,background:"rgba(255,255,255,0.04)",borderRadius:99,overflow:"hidden"}}>
+            <div style={{height:"100%",borderRadius:99,width:`${cd.pct}%`,transition:"width 1s linear",
+              background:cd.urgent?"linear-gradient(90deg,#ff4444,#ff9800)":"linear-gradient(90deg,#c8a800,#f9d71c,#ff9800)",
+              boxShadow:cd.urgent?"0 0 8px rgba(255,68,68,0.6)":"0 0 8px rgba(249,215,28,0.4)"}}/>
           </div>
-          <div style={{height:2,background:"rgba(255,255,255,0.05)",borderRadius:1,overflow:"hidden"}}>
-            <div style={{height:"100%",width:`${cd.pct}%`,
-              background:cd.urgent
-                ?"linear-gradient(90deg,#ff4444,#ff9800)"
-                :"linear-gradient(90deg,#c8a800,#ffd700)",
-              borderRadius:1,transition:"width 1s linear",
-              boxShadow:cd.urgent?"0 0 8px rgba(255,68,68,0.6)":"none"}}/>
-          </div>
-          <div style={{display:"flex",justifyContent:"space-between",marginTop:8}}>
-            <span style={{fontSize:10,color:"rgba(255,255,255,0.25)"}}>
-              {["일","월","화","수","목","금","토"][new Date().getDay()]}요일
-            </span>
-            <span style={{fontSize:10,color:"rgba(255,255,255,0.25)"}}>매주 토 오후 8시</span>
+          <div style={{display:"flex",justifyContent:"space-between",marginTop:5}}>
+            <span style={{fontSize:9,color:"#2a2a2a"}}>월요일</span>
+            <span style={{fontSize:9,color:"#2a2a2a"}}>토 오후 8시</span>
           </div>
         </div>
 
-        {/* 오늘의 추천 + 마지막 번호 */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-          <button onClick={()=>{SFX.pop();setScreen(recMenu.id);}} style={{
-            background:`linear-gradient(135deg,${recMenu.shadow.replace("0.35","0.18")},${recMenu.shadow.replace("0.35","0.08")})`,
-            border:`1px solid ${recMenu.shadow.replace("0.35","0.30")}`,
-            borderRadius:20,padding:"14px 12px",minHeight:140,cursor:"pointer",textAlign:"left",
-            position:"relative",overflow:"hidden",color:"#fff"}}>
-            <div style={{position:"absolute",top:-20,right:-20,width:80,height:80,borderRadius:"50%",
-              background:`radial-gradient(circle,${recMenu.shadow},transparent)`,pointerEvents:"none"}}/>
-            <div style={{fontSize:9,color:recMenu.shadow.replace("0.35","0.8"),
-              fontWeight:700,letterSpacing:1,marginBottom:8,position:"relative"}}>오늘의 추천</div>
-            <div style={{width:50,height:50,borderRadius:16,background:recMenu.grad,
-              boxShadow:`0 4px 16px ${recMenu.shadow}`,marginBottom:10,
-              display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",position:"relative"}}>
-              {MENU_LOTTIE[recMenu.id]?(
-                <Player autoplay loop src={MENU_LOTTIE[recMenu.id]} style={{width:42,height:42}}
-                  {...(recMenu.id==="wheel"?{background:"transparent"}:{})}/>
+        {/* 오늘의 추천 + 마지막 번호 2분할 */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+          <button onClick={()=>{SFX.pop();setScreen(recommended.id);}} style={{
+            background:"linear-gradient(135deg,rgba(192,132,252,0.08),rgba(139,92,246,0.04))",
+            border:"1px solid rgba(192,132,252,0.15)",
+            borderRadius:20,padding:"16px 14px",cursor:"pointer",textAlign:"left",
+            position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",right:-8,bottom:-8,fontSize:48,opacity:0.06,pointerEvents:"none"}}>
+              {recommended.em}
+            </div>
+            <div style={{fontSize:9,color:"rgba(192,132,252,0.6)",letterSpacing:2,marginBottom:8,fontWeight:700}}>
+              오늘의 추천
+            </div>
+            <div style={{height:44,marginBottom:8,display:"flex",alignItems:"center"}}>
+              {MENU_LOTTIE[recommended.id]?(
+                <Player autoplay loop src={MENU_LOTTIE[recommended.id]} style={{width:44,height:44}}
+                  {...(recommended.id==="wheel"?{background:"transparent"}:{})}/>
               ):(
-                <span style={{fontSize:26}}>{recMenu.em}</span>
+                <span style={{fontSize:26}}>{recommended.em}</span>
               )}
             </div>
-            <div style={{fontSize:13,fontWeight:900,color:"#fff",marginBottom:3,lineHeight:1.2}}>{recMenu.title}</div>
-            <div style={{fontSize:10,color:"rgba(255,255,255,0.55)",lineHeight:1.4}}>
-              {recDay.sub}<br/>번호를 뽑아요
+            <div style={{fontSize:13,fontWeight:900,color:"#c084fc",marginBottom:3,lineHeight:1.2}}>
+              {recommended.title}
             </div>
+            <div style={{fontSize:10,color:"#555",lineHeight:1.4}}>
+              {recommended.sub}<br/>번호를 뽑아요
+            </div>
+            <div style={{position:"absolute",bottom:12,right:14,fontSize:14,color:"rgba(192,132,252,0.4)"}}>›</div>
           </button>
 
           <button onClick={()=>setScreen("vault")} style={{
-            background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",
-            borderRadius:20,padding:"14px 12px",minHeight:140,cursor:"pointer",textAlign:"left",color:"#fff"}}>
-            <div style={{fontSize:9,color:"rgba(255,255,255,0.45)",fontWeight:700,letterSpacing:1,marginBottom:8}}>마지막 번호</div>
+            background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",
+            borderRadius:20,padding:"16px 14px",cursor:"pointer",textAlign:"left"}}>
+            <div style={{fontSize:9,color:"#333",letterSpacing:2,marginBottom:8,fontWeight:700}}>마지막 번호</div>
             {lastSaved?(
               <>
-                <div style={{fontSize:11,color:"#9ad8ff",fontWeight:700,marginBottom:8}}>
+                <div style={{fontSize:11,color:"#69c8f2",fontWeight:700,marginBottom:10}}>
                   {lastSaved.mode}
                 </div>
-                <div style={{display:"flex",gap:3,marginBottom:6,flexWrap:"wrap"}}>
+                <div style={{display:"flex",gap:3,marginBottom:8,flexWrap:"wrap"}}>
                   {lastSaved.nums.map((n,i)=>{const c=ballColor(n);return(
-                    <div key={i} style={{width:22,height:22,borderRadius:"50%",
+                    <div key={i} style={{width:24,height:24,borderRadius:"50%",
                       background:`radial-gradient(circle at 35% 35%,${c.bg}cc,${c.bg})`,
                       display:"flex",alignItems:"center",justifyContent:"center",
                       fontSize:8,fontWeight:900,color:c.text}}>{n}</div>
                   );})}
                 </div>
                 {lastSaved.wish&&(
-                  <div style={{fontSize:10,color:"rgba(255,255,255,0.55)"}}>
+                  <div style={{fontSize:10,color:"#664400"}}>
                     {lastSaved.wish.em} {lastSaved.wish.label}
                   </div>
                 )}
               </>
             ):(
-              <div style={{fontSize:12,color:"rgba(255,255,255,0.25)",marginTop:24}}>저장된 번호가 없어요</div>
+              <div style={{fontSize:11,color:"#2a2a2a",marginTop:16}}>저장된 번호가 없어요</div>
             )}
           </button>
         </div>
 
         {/* 구분선 */}
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
-          <div style={{flex:1,height:1,background:"rgba(255,255,255,0.06)"}}/>
-          <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",letterSpacing:3}}>번호 뽑기</div>
-          <div style={{flex:1,height:1,background:"rgba(255,255,255,0.06)"}}/>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+          <div style={{flex:1,height:1,background:"rgba(255,255,255,0.04)"}}/>
+          <span style={{fontSize:10,color:"#2a2a2a",letterSpacing:2}}>번호 뽑기</span>
+          <div style={{flex:1,height:1,background:"rgba(255,255,255,0.04)"}}/>
         </div>
 
-        {/* 메뉴 그리드 */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        {/* 메뉴 그리드 2열 */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
           {MENUS.map((m)=>(
             <button key={m.id} onClick={()=>{SFX.pop();setScreen(m.id);}} style={{
-              background:"rgba(255,255,255,0.04)",
-              border:"1px solid rgba(255,255,255,0.08)",
-              borderRadius:20,padding:"16px 14px",
-              cursor:"pointer",minHeight:130,textAlign:"left",color:"#fff",
-              position:"relative",overflow:"hidden",transition:"transform .15s",
+              background:"rgba(255,255,255,0.02)",
+              border:"1px solid rgba(255,255,255,0.05)",
+              borderRadius:18,padding:"16px 14px",
+              display:"flex",flexDirection:"column",gap:10,
+              cursor:"pointer",textAlign:"left",transition:"all .2s",
             }}>
-              <div style={{position:"absolute",top:-20,right:-20,
-                width:80,height:80,borderRadius:"50%",
-                background:`radial-gradient(circle,${m.shadow},transparent)`,
-                pointerEvents:"none"}}/>
-              <div style={{
-                width:50,height:50,borderRadius:16,
-                background:m.grad,
-                display:"flex",alignItems:"center",justifyContent:"center",
-                marginBottom:10,overflow:"hidden",position:"relative",
-                boxShadow:`0 4px 16px ${m.shadow}`}}>
+              <div style={{width:44,height:44,borderRadius:12,
+                background:m.grad,border:`1px solid ${m.tc}33`,
+                display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
                 {MENU_LOTTIE[m.id]?(
-                  <Player autoplay loop src={MENU_LOTTIE[m.id]} style={{width:42,height:42}}
+                  <Player autoplay loop src={MENU_LOTTIE[m.id]} style={{width:38,height:38}}
                     {...(m.id==="wheel"?{background:"transparent"}:{})}/>
                 ):(
-                  <span style={{fontSize:24}}>{m.em}</span>
+                  <span style={{fontSize:22}}>{m.em}</span>
                 )}
               </div>
-              <div style={{fontSize:13,fontWeight:900,color:"#fff",marginBottom:4,lineHeight:1.2,position:"relative"}}>
-                {m.title}
-              </div>
-              <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",lineHeight:1.4,position:"relative"}}>
-                {m.sub}
+              <div>
+                <div style={{fontSize:12,fontWeight:900,color:m.tc,lineHeight:1.2,marginBottom:3}}>
+                  {m.title}
+                </div>
+                <div style={{fontSize:9,color:"#333",lineHeight:1.4}}>{m.sub}</div>
               </div>
             </button>
           ))}
         </div>
       </div>
-      <style>{`@keyframes twinkleHome{from{opacity:0.2}to{opacity:1}}`}</style>
     </div>
   );
 }
