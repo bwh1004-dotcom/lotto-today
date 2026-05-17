@@ -1,4 +1,18 @@
 import { useState, useEffect, useRef } from "react";
+import { Player } from "@lottiefiles/react-lottie-player";
+import lottieToday from "./assets/lottie/today.json";
+import lottieLocation from "./assets/lottie/location.json";
+import lottieDream from "./assets/lottie/dream.json";
+import lottieFortune from "./assets/lottie/fortune.json";
+import lottieWheel from "./assets/lottie/wheel.json";
+import lottieSlot from "./assets/lottie/slot.json";
+import lottieFormula from "./assets/lottie/formula.json";
+import lottieFavorites from "./assets/lottie/favorites.json";
+
+const MENU_LOTTIE={
+  today:lottieToday, location:lottieLocation, dream:lottieDream, fortune:lottieFortune,
+  wheel:lottieWheel, slot:lottieSlot, formula:lottieFormula, favorites:lottieFavorites,
+};
 
 // ════════════════════════════════════════════════════════════
 // 데이터
@@ -3816,7 +3830,14 @@ export default function App(){
             <div style={{fontSize:9,color:"rgba(192,132,252,0.6)",letterSpacing:2,marginBottom:8,fontWeight:700}}>
               오늘의 추천
             </div>
-            <div style={{fontSize:26,marginBottom:8}}>{recommended.em}</div>
+            <div style={{height:44,marginBottom:8,display:"flex",alignItems:"center"}}>
+              {MENU_LOTTIE[recommended.id]?(
+                <Player autoplay loop src={MENU_LOTTIE[recommended.id]} style={{width:44,height:44}}
+                  {...(recommended.id==="wheel"?{background:"transparent"}:{})}/>
+              ):(
+                <span style={{fontSize:26}}>{recommended.em}</span>
+              )}
+            </div>
             <div style={{fontSize:13,fontWeight:900,color:"#c084fc",marginBottom:3,lineHeight:1.2}}>
               {recommended.title}
             </div>
@@ -3872,10 +3893,15 @@ export default function App(){
               display:"flex",flexDirection:"column",gap:10,
               cursor:"pointer",textAlign:"left",transition:"all .2s",
             }}>
-              <div style={{width:40,height:40,borderRadius:12,
+              <div style={{width:44,height:44,borderRadius:12,
                 background:`${m.tc}18`,border:`1px solid ${m.tc}33`,
-                display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>
-                {m.em}
+                display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+                {MENU_LOTTIE[m.id]?(
+                  <Player autoplay loop src={MENU_LOTTIE[m.id]} style={{width:38,height:38}}
+                    {...(m.id==="wheel"?{background:"transparent"}:{})}/>
+                ):(
+                  <span style={{fontSize:22}}>{m.em}</span>
+                )}
               </div>
               <div>
                 <div style={{fontSize:12,fontWeight:900,color:m.tc,lineHeight:1.2,marginBottom:3}}>
