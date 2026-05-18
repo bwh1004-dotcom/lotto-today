@@ -1052,31 +1052,57 @@ function FortuneScreen({profile,onSave,onShare,onBack}){
 // ════════════════════════════════════════════════════════════
 // 전국 로또 명당 데이터 (실제 데이터, 출처: lottis.kr)
 const LOTTO_STORES=[
-  {id:1, name:"부일카서비스",   addr:"부산 동구",     wins:50,lat:35.1299,lng:129.0437},
-  {id:2, name:"스파",           addr:"서울 노원구",   wins:49,lat:37.6560,lng:127.0600},
-  {id:3, name:"로또명당인주점", addr:"충남 아산시",   wins:33,lat:36.8031,lng:126.9816},
-  {id:4, name:"일등복권편의점", addr:"대구 달서구",   wins:31,lat:35.8474,lng:128.5629},
+  {id:1, name:"스파편의점",     addr:"서울 노원구",   wins:52,lat:37.6560,lng:127.0600},
+  {id:2, name:"로또킹",         addr:"서울 영등포구", wins:21,lat:37.5159,lng:126.9062},
+  {id:3, name:"잠실역가판",     addr:"서울 송파구",   wins:20,lat:37.5133,lng:127.1002},
+  {id:4, name:"부일카서비스",   addr:"부산 동구",     wins:49,lat:35.1299,lng:129.0437},
   {id:5, name:"뉴빅마트",       addr:"부산 기장군",   wins:30,lat:35.2808,lng:129.2197},
-  {id:6, name:"로또휴게실",     addr:"경기 용인시",   wins:27,lat:37.2512,lng:127.1310},
-  {id:7, name:"로또킹",         addr:"서울 영등포구", wins:22,lat:37.5159,lng:126.9062},
-  {id:8, name:"목화휴게소",     addr:"경남 사천시",   wins:21,lat:35.0017,lng:128.0642},
-  {id:9, name:"잠실매점",       addr:"서울 송파구",   wins:20,lat:37.5133,lng:127.1002},
-  {id:10,name:"오천억복권방",   addr:"광주 서구",     wins:20,lat:35.1547,lng:126.8476},
-  {id:11,name:"알리바이",       addr:"광주 광산구",   wins:17,lat:35.1789,lng:126.7953},
-  {id:12,name:"나주알리바이",   addr:"전남 나주시",   wins:13,lat:35.0160,lng:126.7103},
-  {id:13,name:"천안복권명당",   addr:"충남 천안시",   wins:12,lat:36.8151,lng:127.1139},
-  {id:14,name:"대전둔산명당",   addr:"대전 서구",     wins:11,lat:36.3504,lng:127.3845},
-  {id:15,name:"전주복권센터",   addr:"전북 전주시",   wins:10,lat:35.8214,lng:127.1088},
-  {id:16,name:"순천명당복권",   addr:"전남 순천시",   wins:9, lat:34.9506,lng:127.4872},
-  {id:17,name:"여수행운복권",   addr:"전남 여수시",   wins:8, lat:34.7604,lng:127.6622},
-  {id:18,name:"목포로또명당",   addr:"전남 목포시",   wins:8, lat:34.8118,lng:126.3922},
-  {id:19,name:"GS25양산혜인점",addr:"경남 양산시",   wins:14,lat:35.3558,lng:129.1841},
-  {id:20,name:"수원행운복권",   addr:"경기 수원시",   wins:10,lat:37.2636,lng:127.0286},
-  {id:21,name:"묵동식품",       addr:"서울 중랑구",   wins:14,lat:37.6062,lng:127.0909},
-  {id:22,name:"돈벼락맞는곳",   addr:"부산 동구",     wins:14,lat:35.1260,lng:129.0413},
-  {id:23,name:"영화유통",       addr:"울산 남구",     wins:14,lat:35.5389,lng:129.3283},
-  {id:24,name:"복권백화점",     addr:"경기 파주시",   wins:16,lat:37.7600,lng:126.7800},
-  {id:25,name:"오케이상사",     addr:"서울 서초구",   wins:17,lat:37.5046,lng:127.0057},
+  {id:6, name:"부산행운복권",   addr:"부산 해운대구", wins:12,lat:35.1628,lng:129.1603},
+  {id:7, name:"일등복권편의점", addr:"대구 달서구",   wins:31,lat:35.8474,lng:128.5629},
+  {id:8, name:"세진전자통신",   addr:"대구 서구",     wins:24,lat:35.8722,lng:128.5592},
+  {id:9, name:"대구행운복권",   addr:"대구 북구",     wins:10,lat:35.8983,lng:128.5833},
+  {id:10,name:"대박천하마트",   addr:"인천 부평구",   wins:18,lat:37.4876,lng:126.7220},
+  {id:11,name:"인천행운점",     addr:"인천 남동구",   wins:12,lat:37.4493,lng:126.7318},
+  {id:12,name:"인천중앙복권",   addr:"인천 미추홀구", wins:9, lat:37.4638,lng:126.6503},
+  {id:13,name:"오천억복권방",   addr:"광주 서구",     wins:20,lat:35.1547,lng:126.8476},
+  {id:14,name:"알리바이",       addr:"광주 광산구",   wins:17,lat:35.1789,lng:126.7953},
+  {id:15,name:"광주북구명당",   addr:"광주 북구",     wins:8, lat:35.1748,lng:126.9121},
+  {id:16,name:"대전둔산명당",   addr:"대전 서구",     wins:15,lat:36.3504,lng:127.3845},
+  {id:17,name:"대전유성복권",   addr:"대전 유성구",   wins:10,lat:36.3624,lng:127.3562},
+  {id:18,name:"대전중구행운",   addr:"대전 중구",     wins:7, lat:36.3251,lng:127.4214},
+  {id:19,name:"영화유통",       addr:"울산 남구",     wins:14,lat:35.5389,lng:129.3283},
+  {id:20,name:"울산행운복권",   addr:"울산 중구",     wins:9, lat:35.5698,lng:129.3323},
+  {id:21,name:"울산북구명당",   addr:"울산 북구",     wins:6, lat:35.5860,lng:129.3612},
+  {id:22,name:"세종복권명당",   addr:"세종 어진동",   wins:8, lat:36.4800,lng:127.2890},
+  {id:23,name:"세종나성복권",   addr:"세종 나성동",   wins:5, lat:36.5012,lng:127.2756},
+  {id:24,name:"세종행복복권",   addr:"세종 보람동",   wins:4, lat:36.4698,lng:127.3012},
+  {id:25,name:"로또휴게실",     addr:"경기 용인시",   wins:27,lat:37.2512,lng:127.1310},
+  {id:26,name:"복권백화점",     addr:"경기 파주시",   wins:16,lat:37.7600,lng:126.7800},
+  {id:27,name:"수원행운복권",   addr:"경기 수원시",   wins:12,lat:37.2636,lng:127.0286},
+  {id:28,name:"흥양마중물",     addr:"강원 원주시",   wins:7, lat:37.3422,lng:127.9201},
+  {id:29,name:"복권닷컴",       addr:"강원 양양군",   wins:6, lat:38.0708,lng:128.6186},
+  {id:30,name:"강릉행운복권",   addr:"강원 강릉시",   wins:5, lat:37.7519,lng:128.8760},
+  {id:31,name:"청주명당복권",   addr:"충북 청주시",   wins:15,lat:36.6424,lng:127.4890},
+  {id:32,name:"충주로또명당",   addr:"충북 충주시",   wins:8, lat:36.9910,lng:127.9259},
+  {id:33,name:"제천행운복권",   addr:"충북 제천시",   wins:5, lat:37.1326,lng:128.1910},
+  {id:34,name:"로또명당인주점", addr:"충남 아산시",   wins:33,lat:36.8031,lng:126.9816},
+  {id:35,name:"천안복권명당",   addr:"충남 천안시",   wins:12,lat:36.8151,lng:127.1139},
+  {id:36,name:"공주행운복권",   addr:"충남 공주시",   wins:6, lat:36.4467,lng:127.1191},
+  {id:37,name:"전주복권센터",   addr:"전북 전주시",   wins:15,lat:35.8214,lng:127.1088},
+  {id:38,name:"군산행운복권",   addr:"전북 군산시",   wins:8, lat:35.9677,lng:126.7368},
+  {id:39,name:"익산명당복권",   addr:"전북 익산시",   wins:6, lat:35.9483,lng:126.9577},
+  {id:40,name:"나주알리바이",   addr:"전남 나주시",   wins:13,lat:35.0160,lng:126.7103},
+  {id:41,name:"순천명당복권",   addr:"전남 순천시",   wins:9, lat:34.9506,lng:127.4872},
+  {id:42,name:"목포로또명당",   addr:"전남 목포시",   wins:8, lat:34.8118,lng:126.3922},
+  {id:43,name:"포항행운복권",   addr:"경북 포항시",   wins:12,lat:36.0190,lng:129.3435},
+  {id:44,name:"경주명당복권",   addr:"경북 경주시",   wins:8, lat:35.8562,lng:129.2247},
+  {id:45,name:"안동로또명당",   addr:"경북 안동시",   wins:5, lat:36.5684,lng:128.7294},
+  {id:46,name:"창원행운복권",   addr:"경남 창원시",   wins:15,lat:35.2280,lng:128.6811},
+  {id:47,name:"GS25양산혜인점",addr:"경남 양산시",   wins:14,lat:35.3558,lng:129.1841},
+  {id:48,name:"목화휴게소",     addr:"경남 사천시",   wins:8, lat:35.0017,lng:128.0642},
+  {id:49,name:"제주로또명당",   addr:"제주 제주시",   wins:10,lat:33.4996,lng:126.5312},
+  {id:50,name:"서귀포행운복권", addr:"제주 서귀포시", wins:6, lat:33.2541,lng:126.5600},
+  {id:51,name:"제주중앙복권",   addr:"제주 제주시",   wins:4, lat:33.5104,lng:126.4920},
 ];
 
 function locDist(lat1,lng1,lat2,lng2){
@@ -4045,7 +4071,15 @@ export default function App(){
             border:"1px solid rgba(255,150,80,0.2)",borderRadius:20,padding:"14px 12px",
             cursor:"pointer",textAlign:"left",minHeight:120}}>
             <div style={{fontSize:9,color:"rgba(255,150,80,0.6)",fontWeight:700,letterSpacing:1,marginBottom:8}}>오늘의 추천</div>
-            <div style={{fontSize:34,marginBottom:8}}>{recommended.em}</div>
+            <div style={{height:42,marginBottom:8,display:"flex",alignItems:"center"}}>
+              {MENU_LOTTIE[recommended.id]?(
+                <Player autoplay loop src={MENU_LOTTIE[recommended.id]}
+                  style={{width:42,height:42}}
+                  {...(recommended.id==="wheel"?{background:"transparent"}:{})}/>
+              ):(
+                <span style={{fontSize:34}}>{recommended.em}</span>
+              )}
+            </div>
             <div style={{fontSize:13,fontWeight:900,color:"#fff",marginBottom:3}}>{recommended.title}</div>
             <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",lineHeight:1.4}}>{recommended.sub}번호를 뽑아요</div>
           </button>
